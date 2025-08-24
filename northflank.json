@@ -1,0 +1,405 @@
+{
+  "apiVersion": "v1.2",
+  "spec": {
+    "kind": "Workflow",
+    "spec": {
+      "type": "sequential",
+      "steps": [
+        {
+          "ref": "project",
+          "kind": "Project",
+          "spec": {
+            "name": "Sunday-${args.id}",
+            "description": "N8N SaaS Instance - Version 1.103.2",
+            "color": "#ea4b70",
+            "networking": {
+              "allowedIngressProjects": [],
+              "hostAliases": {
+                "enabled": false
+              }
+            },
+            "region": "asia-southeast"
+          }
+        },
+        {
+          "kind": "Workflow",
+          "spec": {
+            "context": {
+              "projectId": "${refs.project.id}"
+            },
+            "type": "sequential",
+            "steps": [
+              {
+                "ref": "database",
+                "kind": "Addon",
+                "spec": {
+                  "name": "database",
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "type": "postgresql",
+                  "version": "16",
+                  "billing": {
+                    "deploymentPlan": "nf-compute-20",
+                    "storageClass": "ssd",
+                    "storage": 4096,
+                    "replicas": 1
+                  }
+                }
+              },
+              {
+                "kind": "Condition",
+                "spec": {
+                  "kind": "Addon",
+                  "spec": {
+                    "data": {
+                      "addonId": "${refs.database.id}"
+                    },
+                    "type": "running"
+                  }
+                }
+              },
+              {
+                "ref": "n8n",
+                "kind": "DeploymentService",
+                "spec": {
+                  "name": "n8n",
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-100-2"
+                  },
+                  "deployment": {
+                    "type": "deployment",
+                    "instances": 1,
+                    "external": {
+                      "imagePath": "docker.n8n.io/n8nio/n8n:latest"
+                    },
+                    "metadata": {
+                      "labels": {},
+                      "annotations": {}
+                    }
+                  },
+                  "autoscaling": {
+                    "horizontal": {
+                      "enabled": true,
+                      "minReplicas": 1,
+                      "maxReplicas": 3,
+                      "cpu": {
+                        "enabled": true,
+                        "thresholdPercentage": 80
+                      },
+                      "memory": {
+                        "enabled": true,
+                        "thresholdPercentage": 80
+                      }
+                    }
+                  },
+                  "loadBalancing": {
+                    "mode": "leastConnection"
+                  },
+                  "ports": [
+                    {
+                      "name": "app",
+                      "internalPort": 5678,
+                      "protocol": "HTTP",
+                      "public": true,
+                      "security": {
+                        "credentials": [],
+                        "policies": [],
+                        "sso": {}
+                      }
+                    }
+                  ],
+                  "healthChecks": [
+                    {
+                      "protocol": "HTTP",
+                      "type": "startupProbe",
+                      "port": 5678,
+                      "path": "/healthz",
+                      "initialDelaySeconds": 30,
+                      "periodSeconds": 15,
+                      "timeoutSeconds": 10,
+                      "failureThreshold": 10
+                    },
+                    {
+                      "protocol": "HTTP",
+                      "type": "livenessProbe",
+                      "port": 5678,
+                      "path": "/healthz",
+                      "initialDelaySeconds": 30,
+                      "periodSeconds": 60,
+                      "timeoutSeconds": 10,
+                      "failureThreshold": 3
+                    },
+                    {
+                      "protocol": "HTTP",
+                      "type": "readinessProbe",
+                      "port": 5678,
+                      "path": "/healthz/readiness",
+                      "initialDelaySeconds": 30,
+                      "periodSeconds": 60,
+                      "timeoutSeconds": 10,
+                      "failureThreshold": 3,
+                      "successThreshold": 1
+                    }
+                  ],
+                  "runtimeEnvironment": {
+                    "secretGroups": "secrets"
+                  }
+                }
+              },
+              {
+                "kind": "SecretGroup",
+                "spec": {
+                  "type": "secret",
+                  "secretType": "environment-arguments",
+                  "priority": 10,
+                  "name": "secrets",
+                  "addonDependencies": [
+                    {
+                      "addonId": "${refs.database.id}",
+                      "keys": [
+                        {
+                          "keyName": "PORT",
+                          "aliases": [
+                            "DB_POSTGRESDB_PORT"
+                          ]
+                        },
+                        {
+                          "keyName": "USERNAME",
+                          "aliases": [
+                            "DB_POSTGRESDB_USER"
+                          ]
+                        },
+                        {
+                          "keyName": "PASSWORD",
+                          "aliases": [
+                            "DB_POSTGRESDB_PASSWORD"
+                          ]
+                        },
+                        {
+                          "keyName": "DATABASE",
+                          "aliases": [
+                            "DB_POSTGRESDB_DATABASE"
+                          ]
+                        },
+                        {
+                          "keyName": "HOST",
+                          "aliases": [
+                            "DB_POSTGRESDB_HOST"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "secrets": {
+                    "variables": {
+                      "DB_TYPE": "postgresdb",
+                      "N8N_HOST": "${refs.n8n.ports.0.dns}",
+                      "N8N_EDITOR_BASE_URL": "https://${refs.n8n.ports.0.dns}",
+                      "WEBHOOK_URL": "https://${refs.n8n.ports.0.dns}",
+                      "N8N_ENCRYPTION_KEY": "${args.N8N_ENCRYPTION_KEY}",
+                      "N8N_RUNNERS_ENABLED": "true",
+                      "N8N_RUNNERS_MODE": "internal",
+                      "N8N_PROXY_HOPS": "1",
+                      "TINI_SUBREAPER": "1"
+                    },
+                    "files": {},
+                    "dockerSecretMounts": {}
+                  },
+                  "restrictions": {
+                    "restricted": false,
+                    "nfObjects": [],
+                    "tags": []
+                  }
+                },
+                "ref": "secrets"
+              },
+              {
+                "kind": "SecretGroup",
+                "spec": {
+                  "type": "secret",
+                  "secretType": "environment-arguments",
+                  "priority": 10,
+                  "secrets": {
+                    "variables": {
+                      "N8N_HOST": "${refs.n8n.ports.0.dns}",
+                      "N8N_EDITOR_BASE_URL": "https://${refs.n8n.ports.0.dns}",
+                      "WEBHOOK_URL": "https://${refs.n8n.ports.0.dns}",
+                      "N8N_ENCRYPTION_KEY": "${args.N8N_ENCRYPTION_KEY}",
+                      "SETUP_WEBHOOK_URL": "${args.webhook_url}",
+                      "WEBHOOK_AUTH_TOKEN": "${args.webhook_token}",
+                      "N8N_FIRST_NAME": "${args.user_name}",
+                      "N8N_LAST_NAME": "${args.user_name}",
+                      "N8N_USER_EMAIL": "${args.user_email}",
+                      "N8N_USER_PASSWORD": "7On${args.N8N_ENCRYPTION_KEY}",
+                      "N8N_USER_ID": "${args.user_id}",
+                      "USER_ID": "${args.user_id}",
+                      "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
+                      "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
+                      "WORKFLOW_TEMPLATES": "default"
+                    },
+                    "files": {},
+                    "dockerSecretMounts": {}
+                  },
+                  "addonDependencies": [],
+                  "name": "n8n-secrets",
+                  "restrictions": {
+                    "restricted": false,
+                    "nfObjects": [],
+                    "tags": []
+                  }
+                },
+                "ref": "n8n-secrets"
+              },
+              {
+                "ref": "setup-job",
+                "kind": "ManualJob",
+                "spec": {
+                  "runOnSourceChange": "never",
+                  "backoffLimit": 3,
+                  "activeDeadlineSeconds": 600,
+                  "deployment": {
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 1024
+                      },
+                      "shmSize": 64
+                    },
+                    "docker": {
+                      "configType": "default"
+                    },
+                    "external": {
+                      "imagePath": "ghcr.io/7on-ai/7on-n8n:latest"
+                    }
+                  },
+                  "name": "n8n-setup",
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-20"
+                  },
+                  "runtimeEnvironment": {
+                    "secretGroups": "n8n-secrets"
+                  },
+                  "buildConfiguration": {
+                    "pathIgnoreRules": [],
+                    "isAllowList": false,
+                    "ciIgnoreFlagsEnabled": false
+                  },
+                  "buildArguments": {},
+                  "runtimeFiles": {}
+                }
+              },
+              {
+                "kind": "JobRun",
+                "spec": {
+                  "jobId": "${refs.setup-job.id}"
+                },
+                "condition": "success",
+                "ref": "setup-jobrun"
+              },
+              {
+                "kind": "SecretGroup",
+                "spec": {
+                  "type": "secret",
+                  "secretType": "environment-arguments",
+                  "priority": 10,
+                  "secrets": {
+                    "variables": {
+                      "SUPABASE_URL": "${args.supabase_url}",
+                      "SUPABASE_SERVICE_ROLE_KEY": "${args.supabase_service_role_key}",
+                      "USER_ID": "${args.user_id}",
+                      "N8N_URL": "https://${refs.n8n.ports.0.dns}",
+                      "N8N_USER_EMAIL": "${args.user_email}",
+                      "N8N_USER_PASSWORD": "7On${args.N8N_ENCRYPTION_KEY}",
+                      "N8N_ENCRYPTION_KEY": "${args.N8N_ENCRYPTION_KEY}",
+                      "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
+                      "NORTHFLANK_PROJECT_NAME": "${refs.project.name}"
+                    },
+                    "files": {},
+                    "dockerSecretMounts": {}
+                  },
+                  "addonDependencies": [],
+                  "name": "store-credentials-secrets",
+                  "restrictions": {
+                    "restricted": false,
+                    "nfObjects": [],
+                    "tags": []
+                  }
+                },
+                "ref": "store-credentials-secrets"
+              },
+              {
+                "ref": "store-n8n-credentials",
+                "kind": "ManualJob",
+                "spec": {
+                  "runOnSourceChange": "never",
+                  "backoffLimit": 3,
+                  "activeDeadlineSeconds": 600,
+                  "deployment": {
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 1024
+                      },
+                      "shmSize": 64
+                    },
+                    "docker": {
+                      "configType": "default"
+                    },
+                    "external": {
+                      "imagePath": "ghcr.io/7on-ai/n8n-store-credentials:latest"
+                    }
+                  },
+                  "name": "store-n8n-credentials",
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-10"
+                  },
+                  "runtimeEnvironment": {
+                    "secretGroups": "store-credentials-secrets"
+                  },
+                  "buildConfiguration": {
+                    "pathIgnoreRules": [],
+                    "isAllowList": false,
+                    "ciIgnoreFlagsEnabled": false
+                  },
+                  "buildArguments": {},
+                  "runtimeFiles": {}
+                }
+              },
+              {
+                "kind": "JobRun",
+                "spec": {
+                  "jobId": "${refs.store-n8n-credentials.id}"
+                },
+                "condition": "success",
+                "ref": "store-credentials-jobrun"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "name": "Sunday",
+  "description": "Infra-n8n Latest Version & n8n-setup ",
+  "options": {
+    "autorun": false,
+    "concurrencyPolicy": "allow",
+    "runOnUpdate": false
+  },
+  "gitops": {
+    "repoUrl": "https://github.com/7on-ai/n8n-store-credentials",
+    "vcsService": "github",
+    "accountLogin": "7on-ai",
+    "branch": "main",
+    "filePath": "/northflank.json"
+  },
+  "$schema": "https://api.northflank.com/v1/schemas/template"
+}
