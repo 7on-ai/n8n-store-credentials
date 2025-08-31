@@ -1,0 +1,24 @@
+{
+  "name": "n8n-store-credentials",
+  "version": "1.0.0",
+  "description": "Automated N8N credentials storage for Supabase",
+  "main": "store-credentials.js",
+  "scripts": {
+    "start": "node store-credentials.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "n8n",
+    "supabase",
+    "northflank",
+    "automation"
+  ],
+  "author": "7on-ai",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
