@@ -46,50 +46,102 @@ if (missingVars.length > 0) {
   process.exit(1);
 }
 
-// Prepare payload for Supabase
-const payload = {
-  n8n_url: N8N_URL,
-  n8n_user_email: N8N_USER_EMAIL,
-  n8n_encryption_key: N8N_ENCRYPTION_KEY,
-  northflank_project_id: NORTHFLANK_PROJECT_ID,
-  northflank_project_name: NORTHFLANK_PROJECT_NAME,
-  northflank_project_status: 'ready',
-  template_completed_at: new Date().toISOString(),
-  updated_at: new Date().toISOString()
-};
-
-console.log('[INFO] Payload prepared:', JSON.stringify(payload, null, 2));
-
-// Function to update Supabase
-async function updateSupabase() {
+// Function to check if user record already exists
+async function checkExistingUser() {
   try {
-    console.log('[INFO] Sending data to Supabase...');
+    console.log('[INFO] Checking if user record already exists...');
     
     const response = await fetch(`${SUPABASE_URL}/rest/v1/launchmvpfast-saas-starterkit_user?id=eq.${USER_ID}`, {
-      method: 'PATCH',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(payload)
+        'apikey': SUPABASE_SERVICE_ROLE_KEY
+      }
     });
 
-    console.log(`[INFO] Supabase response status: ${response.status}`);
-    
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[ERROR] Supabase update failed:', errorText);
-      throw new Error(`Supabase update failed: ${response.status} - ${errorText}`);
+      throw new Error(`Failed to check existing user: ${response.status}`);
     }
 
-    console.log('[SUCCESS] N8N credentials successfully stored in Supabase!');
-    return true;
+    const data = await response.json();
+    return data.length > 0 ? data[0] : null;
   } catch (error) {
-    console.error('[ERROR] Failed to update Supabase:', error.message);
+    console.error('[ERROR] Failed to check existing user:', error.message);
     throw error;
   }
+}
+
+// Function to create new user record
+async function createUserRecord() {
+  const payload = {
+    id: USER_ID,
+    email: N8N_USER_EMAIL, // ใช้ N8N_USER_EMAIL เป็น email
+    n8n_url: N8N_URL,
+    n8n_user_email: N8N_USER_EMAIL,
+    n8n_encryption_key: N8N_ENCRYPTION_KEY,
+    northflank_project_id: NORTHFLANK_PROJECT_ID,
+    northflank_project_name: NORTHFLANK_PROJECT_NAME,
+    northflank_project_status: 'ready',
+    template_completed_at: new Date().toISOString()
+  };
+
+  console.log('[INFO] Creating new user record...');
+  
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/launchmvpfast-saas-starterkit_user`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      'apikey': SUPABASE_SERVICE_ROLE_KEY,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to create user record: ${response.status} - ${errorText}`);
+  }
+
+  console.log('[SUCCESS] User record created successfully!');
+  return payload;
+}
+
+// Function to update existing user record
+async function updateUserRecord() {
+  const payload = {
+    email: N8N_USER_EMAIL, // อัปเดต email ด้วย
+    n8n_url: N8N_URL,
+    n8n_user_email: N8N_USER_EMAIL,
+    n8n_encryption_key: N8N_ENCRYPTION_KEY,
+    northflank_project_id: NORTHFLANK_PROJECT_ID,
+    northflank_project_name: NORTHFLANK_PROJECT_NAME,
+    northflank_project_status: 'ready',
+    template_completed_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  console.log('[INFO] Updating existing user record...');
+  
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/launchmvpfast-saas-starterkit_user?id=eq.${USER_ID}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      'apikey': SUPABASE_SERVICE_ROLE_KEY,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to update user record: ${response.status} - ${errorText}`);
+  }
+
+  console.log('[SUCCESS] User record updated successfully!');
+  return payload;
 }
 
 // Function to verify N8N instance is accessible
@@ -97,22 +149,60 @@ async function verifyN8NInstance() {
   try {
     console.log('[INFO] Verifying N8N instance accessibility...');
     
-    const response = await fetch(`${N8N_URL}/healthz`, {
-      method: 'GET',
-      timeout: 10000
-    });
+    // Try multiple endpoints to verify N8N is running
+    const endpoints = ['/healthz', '/healthz/readiness', '/'];
+    
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(`${N8N_URL}${endpoint}`, {
+          method: 'GET',
+          timeout: 10000
+        });
 
-    if (response.ok) {
-      console.log('[SUCCESS] N8N instance is accessible');
-      return true;
-    } else {
-      console.log(`[WARNING] N8N health check returned ${response.status}, but continuing...`);
-      return true; // Continue anyway as some N8N instances might not have health endpoint
+        if (response.ok) {
+          console.log(`[SUCCESS] N8N instance is accessible via ${endpoint}`);
+          return true;
+        }
+      } catch (error) {
+        console.log(`[DEBUG] Endpoint ${endpoint} failed: ${error.message}`);
+        continue;
+      }
     }
+    
+    console.log('[WARNING] N8N health checks failed, but continuing...');
+    return true; // Continue anyway as N8N might be starting up
   } catch (error) {
-    console.log(`[WARNING] N8N health check failed: ${error.message}, but continuing...`);
+    console.log(`[WARNING] N8N verification failed: ${error.message}, but continuing...`);
     return true; // Continue anyway
   }
+}
+
+// Function to wait for N8N to be fully ready
+async function waitForN8NReady(maxRetries = 12, interval = 10000) {
+  console.log('[INFO] Waiting for N8N to be fully ready...');
+  
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch(`${N8N_URL}/healthz/readiness`, {
+        method: 'GET',
+        timeout: 5000
+      });
+
+      if (response.ok) {
+        console.log('[SUCCESS] N8N is ready!');
+        return true;
+      }
+      
+      console.log(`[INFO] Attempt ${i + 1}/${maxRetries}: N8N not ready yet, waiting ${interval/1000}s...`);
+      await new Promise(resolve => setTimeout(resolve, interval));
+    } catch (error) {
+      console.log(`[INFO] Attempt ${i + 1}/${maxRetries}: ${error.message}, retrying...`);
+      await new Promise(resolve => setTimeout(resolve, interval));
+    }
+  }
+  
+  console.log('[WARNING] Max retries reached, proceeding anyway...');
+  return false;
 }
 
 // Main execution
@@ -120,22 +210,53 @@ async function main() {
   try {
     console.log('[INFO] Starting main execution...');
     
-    // Step 1: Verify N8N instance
+    // Step 1: Wait for N8N to be ready
+    await waitForN8NReady();
+    
+    // Step 2: Verify N8N instance
     await verifyN8NInstance();
     
-    // Step 2: Wait a moment to ensure everything is stable
-    console.log('[INFO] Waiting 5 seconds to ensure stability...');
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    // Step 3: Check if user already exists
+    const existingUser = await checkExistingUser();
     
-    // Step 3: Update Supabase
-    await updateSupabase();
+    // Step 4: Create or update user record
+    if (existingUser) {
+      console.log('[INFO] User record exists, updating...');
+      await updateUserRecord();
+    } else {
+      console.log('[INFO] Creating new user record...');
+      await createUserRecord();
+    }
     
     console.log('[SUCCESS] All operations completed successfully!');
+    console.log(`[INFO] N8N instance available at: ${N8N_URL}`);
+    console.log(`[INFO] Login with: ${N8N_USER_EMAIL}`);
+    console.log(`[INFO] Project ID: ${NORTHFLANK_PROJECT_ID}`);
+    
     process.exit(0);
     
   } catch (error) {
     console.error('[FATAL] Main execution failed:', error.message);
     console.error('[FATAL] Stack trace:', error.stack);
+    
+    // Try to update status as failed
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/launchmvpfast-saas-starterkit_user?id=eq.${USER_ID}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          'apikey': SUPABASE_SERVICE_ROLE_KEY
+        },
+        body: JSON.stringify({
+          northflank_project_status: 'failed',
+          updated_at: new Date().toISOString()
+        })
+      });
+    } catch (updateError) {
+      console.error('[ERROR] Failed to update error status:', updateError.message);
+    }
+    
     process.exit(1);
   }
 }
