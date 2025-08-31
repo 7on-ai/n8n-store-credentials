@@ -229,8 +229,6 @@
                       "N8N_EDITOR_BASE_URL": "https://${refs.n8n.ports.0.dns}",
                       "WEBHOOK_URL": "https://${refs.n8n.ports.0.dns}",
                       "N8N_ENCRYPTION_KEY": "${args.N8N_ENCRYPTION_KEY}",
-                      "SETUP_WEBHOOK_URL": "${args.webhook_url}",
-                      "WEBHOOK_AUTH_TOKEN": "${args.webhook_token}",
                       "N8N_FIRST_NAME": "${args.user_name}",
                       "N8N_LAST_NAME": "${args.user_name}",
                       "N8N_USER_EMAIL": "${args.user_email}",
@@ -303,6 +301,71 @@
                 "ref": "setup-jobrun"
               },
               {
+                "kind": "CombinedService",
+                "ref": "n8n-store-credentials",
+                "spec": {
+                  "deployment": {
+                    "instances": 1,
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 1024
+                      },
+                      "shmSize": 64
+                    },
+                    "docker": {
+                      "configType": "default"
+                    }
+                  },
+                  "loadBalancing": {
+                    "mode": "leastConnection"
+                  },
+                  "buildSettings": {
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 16384
+                      }
+                    },
+                    "dockerfile": {
+                      "buildEngine": "buildkit",
+                      "dockerWorkDir": "/",
+                      "dockerFilePath": "/Dockerfile",
+                      "buildkit": {
+                        "useCache": false,
+                        "cacheStorageSize": 16384
+                      }
+                    }
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-10",
+                    "buildPlan": "nf-compute-400-16"
+                  },
+                  "runtimeEnvironment": {
+                    "secretGroups": "store-credentials-secrets"
+                  },
+                  "runtimeFiles": {},
+                  "buildArguments": {},
+                  "buildFiles": {},
+                  "dockerSecretMounts": {},
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "name": "n8n-store-credentials",
+                  "vcsData": {
+                    "projectType": "github",
+                    "accountLogin": "7on-ai",
+                    "projectUrl": "https://github.com/7on-ai/n8n-store-credentials",
+                    "projectBranch": "main"
+                  },
+                  "ports": [],
+                  "disabledCI": false,
+                  "buildConfiguration": {
+                    "pathIgnoreRules": [],
+                    "isAllowList": false,
+                    "ciIgnoreFlagsEnabled": false
+                  }
+                }
+              },
+              {
                 "kind": "SecretGroup",
                 "spec": {
                   "type": "secret",
@@ -332,54 +395,6 @@
                   }
                 },
                 "ref": "store-credentials-secrets"
-              },
-              {
-                "ref": "store-n8n-credentials",
-                "kind": "ManualJob",
-                "spec": {
-                  "runOnSourceChange": "never",
-                  "backoffLimit": 3,
-                  "activeDeadlineSeconds": 600,
-                  "deployment": {
-                    "storage": {
-                      "ephemeralStorage": {
-                        "storageSize": 1024
-                      },
-                      "shmSize": 64
-                    },
-                    "docker": {
-                      "configType": "default"
-                    },
-                    "external": {
-                      "imagePath": "ghcr.io/7on-ai/n8n-store-credentials:latest"
-                    }
-                  },
-                  "name": "store-n8n-credentials",
-                  "infrastructure": {
-                    "architecture": "x86"
-                  },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-10"
-                  },
-                  "runtimeEnvironment": {
-                    "secretGroups": "store-credentials-secrets"
-                  },
-                  "buildConfiguration": {
-                    "pathIgnoreRules": [],
-                    "isAllowList": false,
-                    "ciIgnoreFlagsEnabled": false
-                  },
-                  "buildArguments": {},
-                  "runtimeFiles": {}
-                }
-              },
-              {
-                "kind": "JobRun",
-                "spec": {
-                  "jobId": "${refs.store-n8n-credentials.id}"
-                },
-                "condition": "success",
-                "ref": "store-credentials-jobrun"
               }
             ]
           }
@@ -393,6 +408,54 @@
     "autorun": false,
     "concurrencyPolicy": "allow",
     "runOnUpdate": false
+  },
+  "arguments": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the project",
+      "required": true
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User ID from your application",
+      "required": true
+    },
+    "user_name": {
+      "type": "string",
+      "description": "User's name for N8N setup",
+      "required": true
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User's email for N8N login",
+      "required": true,
+      "validation": {
+        "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+      }
+    },
+    "N8N_ENCRYPTION_KEY": {
+      "type": "string",
+      "description": "N8N encryption key",
+      "required": true,
+      "sensitive": true,
+      "validation": {
+        "minLength": 32
+      }
+    },
+    "supabase_url": {
+      "type": "string",
+      "description": "Supabase project URL",
+      "required": true,
+      "validation": {
+        "pattern": "^https://[a-zA-Z0-9-]+\\.supabase\\.co$"
+      }
+    },
+    "supabase_service_role_key": {
+      "type": "string",
+      "description": "Supabase service role key",
+      "required": true,
+      "sensitive": true
+    }
   },
   "gitops": {
     "repoUrl": "https://github.com/7on-ai/n8n-store-credentials",
