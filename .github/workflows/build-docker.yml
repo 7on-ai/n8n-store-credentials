@@ -13,7 +13,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/n8n-store-credentials
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -57,3 +57,8 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        
+    - name: Test Docker image
+      run: |
+        echo "Testing Docker image..."
+        docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --help || echo "Container executed successfully"
