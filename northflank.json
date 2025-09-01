@@ -301,11 +301,12 @@
                 "ref": "setup-jobrun"
               },
               {
-                "kind": "CombinedService",
-                "ref": "n8n-store-credentials",
+                "kind": "ManualJob",
                 "spec": {
+                  "runOnSourceChange": "never",
+                  "backoffLimit": 3,
+                  "activeDeadlineSeconds": 600,
                   "deployment": {
-                    "instances": 1,
                     "storage": {
                       "ephemeralStorage": {
                         "storageSize": 1024
@@ -314,56 +315,41 @@
                     },
                     "docker": {
                       "configType": "default"
-                    }
-                  },
-                  "loadBalancing": {
-                    "mode": "leastConnection"
-                  },
-                  "buildSettings": {
-                    "storage": {
-                      "ephemeralStorage": {
-                        "storageSize": 16384
-                      }
                     },
-                    "dockerfile": {
-                      "buildEngine": "buildkit",
-                      "dockerWorkDir": "/",
-                      "dockerFilePath": "/Dockerfile",
-                      "buildkit": {
-                        "useCache": false,
-                        "cacheStorageSize": 16384
-                      }
+                    "external": {
+                      "imagePath": "ghcr.io/7on-ai/n8n-store-credentials:latest",
+                      "credentials": "northflank-ghcr-access"
                     }
                   },
                   "billing": {
                     "deploymentPlan": "nf-compute-10",
                     "buildPlan": "nf-compute-400-16"
                   },
-                  "runtimeEnvironment": {
-                    "secretGroups": "store-credentials-secrets"
-                  },
+                  "runtimeEnvironment": {},
                   "runtimeFiles": {},
-                  "buildArguments": {},
-                  "buildFiles": {},
-                  "dockerSecretMounts": {},
                   "infrastructure": {
                     "architecture": "x86"
                   },
-                  "name": "n8n-store-credentials",
-                  "vcsData": {
-                    "projectType": "github",
-                    "accountLogin": "7on-ai",
-                    "projectUrl": "https://github.com/7on-ai/n8n-store-credentials",
-                    "projectBranch": "main"
-                  },
-                  "ports": [],
-                  "disabledCI": false,
+                  "name": "store-n8n-credentials",
+                  "buildArguments": {},
+                  "buildFiles": {},
+                  "dockerSecretMounts": {},
                   "buildConfiguration": {
                     "pathIgnoreRules": [],
                     "isAllowList": false,
                     "ciIgnoreFlagsEnabled": false
                   }
-                }
+                },
+                "ref": "store-n8n-credentials"
+              },
+              {
+                "kind": "JobRun",
+                "spec": {
+                  "projectId": "${refs.project.id}",
+                  "jobId": "${refs.store-n8n-credentials.id}"
+                },
+                "condition": "success",
+                "ref": "refsstore-n8n-credentialsid-jobrun-1"
               },
               {
                 "kind": "SecretGroup",
