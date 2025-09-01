@@ -301,57 +301,6 @@
                 "ref": "setup-jobrun"
               },
               {
-                "kind": "ManualJob",
-                "spec": {
-                  "runOnSourceChange": "never",
-                  "backoffLimit": 3,
-                  "activeDeadlineSeconds": 600,
-                  "deployment": {
-                    "storage": {
-                      "ephemeralStorage": {
-                        "storageSize": 1024
-                      },
-                      "shmSize": 64
-                    },
-                    "docker": {
-                      "configType": "default"
-                    },
-                    "external": {
-                      "imagePath": "ghcr.io/7on-ai/n8n-store-credentials:latest",
-                      "credentials": "northflank-ghcr-access"
-                    }
-                  },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-10",
-                    "buildPlan": "nf-compute-400-16"
-                  },
-                  "runtimeEnvironment": {},
-                  "runtimeFiles": {},
-                  "infrastructure": {
-                    "architecture": "x86"
-                  },
-                  "name": "store-n8n-credentials",
-                  "buildArguments": {},
-                  "buildFiles": {},
-                  "dockerSecretMounts": {},
-                  "buildConfiguration": {
-                    "pathIgnoreRules": [],
-                    "isAllowList": false,
-                    "ciIgnoreFlagsEnabled": false
-                  }
-                },
-                "ref": "store-n8n-credentials"
-              },
-              {
-                "kind": "JobRun",
-                "spec": {
-                  "projectId": "${refs.project.id}",
-                  "jobId": "${refs.store-n8n-credentials.id}"
-                },
-                "condition": "success",
-                "ref": "refsstore-n8n-credentialsid-jobrun-1"
-              },
-              {
                 "kind": "SecretGroup",
                 "spec": {
                   "type": "secret",
@@ -381,6 +330,59 @@
                   }
                 },
                 "ref": "store-credentials-secrets"
+              },
+              {
+                "kind": "ManualJob",
+                "spec": {
+                  "runOnSourceChange": "never",
+                  "backoffLimit": 3,
+                  "activeDeadlineSeconds": 600,
+                  "deployment": {
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 1024
+                      },
+                      "shmSize": 64
+                    },
+                    "docker": {
+                      "configType": "default"
+                    },
+                    "external": {
+                      "credentials": "northflank-ghcr-access",
+                      "imagePath": "ghcr.io/7on-ai/n8n-store-credentials:latest"
+                    }
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-10",
+                    "buildPlan": "nf-compute-400-16"
+                  },
+                  "runtimeEnvironment": {
+                    "secretGroups": "store-credentials-secrets"
+                  },
+                  "runtimeFiles": {},
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "name": "store-n8n-credentials",
+                  "buildArguments": {},
+                  "buildFiles": {},
+                  "dockerSecretMounts": {},
+                  "buildConfiguration": {
+                    "pathIgnoreRules": [],
+                    "isAllowList": false,
+                    "ciIgnoreFlagsEnabled": false
+                  }
+                },
+                "ref": "store-n8n-credentials"
+              },
+              {
+                "kind": "JobRun",
+                "spec": {
+                  "projectId": "${refs.project.id}",
+                  "jobId": "${refs.store-n8n-credentials.id}"
+                },
+                "condition": "success",
+                "ref": "store-credentials-jobrun"
               }
             ]
           }
