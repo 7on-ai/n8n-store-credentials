@@ -237,9 +237,7 @@
                       "USER_ID": "${args.user_id}",
                       "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
                       "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
-                      "WORKFLOW_TEMPLATES": "default",
-                      "SUPABASE_URL": "${args.supabase_url}",
-                      "SUPABASE_SERVICE_ROLE_KEY": "${args.supabase_service_role_key}"
+                      "WORKFLOW_TEMPLATES": "default"
                     },
                     "files": {},
                     "dockerSecretMounts": {}
@@ -301,54 +299,6 @@
                 },
                 "condition": "success",
                 "ref": "setup-jobrun"
-              },
-              {
-                "ref": "api-creation-job",
-                "kind": "ManualJob",
-                "spec": {
-                  "name": "n8n-api-creation",
-                  "runOnSourceChange": "never",
-                  "backoffLimit": 3,
-                  "activeDeadlineSeconds": 900,
-                  "deployment": {
-                    "storage": {
-                      "ephemeralStorage": {
-                        "storageSize": 1024
-                      },
-                      "shmSize": 128
-                    },
-                    "docker": {
-                      "configType": "default"
-                    },
-                    "external": {
-                      "imagePath": "ghcr.io/7on-ai/n8n-api-manager:latest"
-                    }
-                  },
-                  "infrastructure": {
-                    "architecture": "x86"
-                  },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-20"
-                  },
-                  "runtimeEnvironment": {
-                    "secretGroups": "n8n-secrets"
-                  },
-                  "buildConfiguration": {
-                    "pathIgnoreRules": [],
-                    "isAllowList": false,
-                    "ciIgnoreFlagsEnabled": false
-                  },
-                  "buildArguments": {},
-                  "runtimeFiles": {}
-                }
-              },
-              {
-                "kind": "JobRun",
-                "spec": {
-                  "jobId": "${refs.api-creation-job.id}"
-                },
-                "condition": "success",
-                "ref": "api-creation-jobrun"
               },
               {
                 "kind": "SecretGroup",
