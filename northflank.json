@@ -301,55 +301,6 @@
                 "ref": "setup-jobrun"
               },
               {
-                "ref": "api-manager-job",
-                "kind": "ManualJob",
-                "spec": {
-                  "runOnSourceChange": "never",
-                  "backoffLimit": 3,
-                  "activeDeadlineSeconds": 900,
-                  "deployment": {
-                    "storage": {
-                      "ephemeralStorage": {
-                        "storageSize": 1024
-                      },
-                      "shmSize": 64
-                    },
-                    "docker": {
-                      "configType": "default"
-                    },
-                    "external": {
-                      "credentials": "northflank-ghcr-access",
-                      "imagePath": "ghcr.io/7on-ai/n8n-api-manager:latest"
-                    }
-                  },
-                  "name": "n8n-api-manager",
-                  "infrastructure": {
-                    "architecture": "x86"
-                  },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-20"
-                  },
-                  "runtimeEnvironment": {
-                    "secretGroups": "store-credentials-secrets"
-                  },
-                  "buildConfiguration": {
-                    "pathIgnoreRules": [],
-                    "isAllowList": false,
-                    "ciIgnoreFlagsEnabled": false
-                  },
-                  "buildArguments": {},
-                  "runtimeFiles": {}
-                }
-              },
-              {
-                "kind": "JobRun",
-                "spec": {
-                  "jobId": "${refs.api-manager-job.id}"
-                },
-                "condition": "success",
-                "ref": "api-manager-jobrun"
-              },
-              {
                 "kind": "SecretGroup",
                 "spec": {
                   "type": "secret",
