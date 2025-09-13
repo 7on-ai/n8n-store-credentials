@@ -1,7 +1,7 @@
 {
   "name": "n8n-store-credentials",
-  "version": "1.1.0",
-  "description": "Automated N8N credentials storage for Supabase with API key support",
+  "version": "1.0.0",
+  "description": "Automated N8N credentials storage for Supabase",
   "main": "store-credentials.js",
   "scripts": {
     "start": "node store-credentials.js",
@@ -11,9 +11,7 @@
     "n8n",
     "supabase",
     "northflank",
-    "automation",
-    "api-key",
-    "credentials"
+    "automation"
   ],
   "author": "7on-ai",
   "license": "MIT",
@@ -22,13 +20,5 @@
   },
   "dependencies": {
     "node-fetch": "^3.3.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/7on-ai/n8n-store-credentials.git"
-  },
-  "bugs": {
-    "url": "https://github.com/7on-ai/n8n-store-credentials/issues"
-  },
-  "homepage": "https://github.com/7on-ai/n8n-store-credentials#readme"
+  }
 }
