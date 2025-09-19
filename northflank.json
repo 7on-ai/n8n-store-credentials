@@ -319,7 +319,8 @@
                       "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
                       "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
                       "WEBHOOK_URL": "${args.webhook_url}",
-                      "WEBHOOK_TOKEN": "${args.webhook_token}"
+                      "WEBHOOK_TOKEN": "${args.webhook_token}",
+                      "N8N_API_KEY": "${args.n8n_api_key}"
                     },
                     "files": {},
                     "dockerSecretMounts": {}
