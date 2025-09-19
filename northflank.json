@@ -390,6 +390,24 @@
                 "ref": "generate-apikey-job",
                 "kind": "ManualJob",
                 "spec": {
+                  "runOnSourceChange": "never",
+                  "backoffLimit": 3,
+                  "activeDeadlineSeconds": 600,
+                  "deployment": {
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 1024
+                      },
+                      "shmSize": 64
+                    },
+                    "docker": {
+                      "configType": "customCommand",
+                      "customCommand": "sh -c \"apk add --no-cache jq; for i in 1 2 3 4 5; do echo 'Waiting for n8n...'; sleep 15; TOKEN=$(curl -s -X POST http://${N8N_HOST}:5678/rest/login -H 'Content-Type: application/json' -d '{\\\"email\\\":\\\"${N8N_USER_EMAIL}\\\",\\\"password\\\":\\\"${N8N_USER_PASSWORD}\\\"}' | jq -r .data.token); if [ \\\"$TOKEN\\\" != \\\"null\\\" ] && [ -n \\\"$TOKEN\\\" ]; then echo \\\"Got token: $TOKEN\\\"; curl -s -X POST http://${N8N_HOST}:5678/rest/api-key -H \\\"Authorization: Bearer $TOKEN\\\" -H 'Content-Type: application/json' -d '{\\\"name\\\":\\\"default-key\\\"}'; exit 0; fi; done; exit 1\""
+                    },
+                    "external": {
+                      "imagePath": "docker.io/curlimages/curl:latest"
+                    }
+                  },
                   "name": "generate-apikey",
                   "infrastructure": {
                     "architecture": "x86"
@@ -397,22 +415,17 @@
                   "billing": {
                     "deploymentPlan": "nf-compute-10"
                   },
-                  "deployment": {
-                    "external": {
-                      "imagePath": "docker.io/curlimages/curl:latest"
-                    }
-                  },
                   "runtimeEnvironment": {
                     "secretGroups": "n8n-secrets"
                   },
-                  "backoffLimit": 3,
                   "healthChecks": [],
                   "buildConfiguration": {
                     "pathIgnoreRules": [],
                     "isAllowList": false,
                     "ciIgnoreFlagsEnabled": false
                   },
-                  "buildArguments": {}
+                  "buildArguments": {},
+                  "runtimeFiles": {}
                 }
               },
               {
