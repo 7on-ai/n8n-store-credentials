@@ -406,6 +406,7 @@
                     "secretGroups": "n8n-secrets"
                   },
                   "backoffLimit": 3,
+                  "healthChecks": [],
                   "buildConfiguration": {
                     "pathIgnoreRules": [],
                     "isAllowList": false,
