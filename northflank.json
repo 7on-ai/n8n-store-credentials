@@ -316,7 +316,9 @@
                       "N8N_USER_PASSWORD": "7On${args.N8N_ENCRYPTION_KEY}",
                       "N8N_ENCRYPTION_KEY": "${args.N8N_ENCRYPTION_KEY}",
                       "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
-                      "NORTHFLANK_PROJECT_NAME": "${refs.project.name}"
+                      "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
+                      "WEBHOOK_URL": "${args.webhook_url}",
+                      "WEBHOOK_TOKEN": "${args.webhook_token}"
                     },
                     "files": {},
                     "dockerSecretMounts": {}
@@ -413,6 +415,20 @@
       "validation": {
         "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
       }
+    },
+    "webhook_url": {
+      "type": "string",
+      "description": "Webhook URL for notifications",
+      "required": true,
+      "validation": {
+        "pattern": "^https://.+"
+      }
+    },
+    "webhook_token": {
+      "type": "string",
+      "description": "Webhook authentication token",
+      "required": true,
+      "sensitive": true
     },
     "N8N_ENCRYPTION_KEY": {
       "type": "string",
