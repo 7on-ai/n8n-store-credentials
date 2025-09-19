@@ -385,6 +385,42 @@
                 },
                 "condition": "success",
                 "ref": "store-credentials-jobrun"
+              },
+              {
+                "ref": "generate-apikey-job",
+                "kind": "ManualJob",
+                "spec": {
+                  "name": "generate-apikey",
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-10"
+                  },
+                  "deployment": {
+                    "external": {
+                      "imagePath": "curlimages/curl:7.85.0-jq"
+                    }
+                  },
+                  "runtimeEnvironment": {
+                    "secretGroups": "n8n-secrets"
+                  },
+                  "backoffLimit": 3,
+                  "buildConfiguration": {
+                    "pathIgnoreRules": [],
+                    "isAllowList": false,
+                    "ciIgnoreFlagsEnabled": false
+                  },
+                  "buildArguments": {}
+                }
+              },
+              {
+                "kind": "JobRun",
+                "spec": {
+                  "jobId": "${refs.generate-apikey-job.id}"
+                },
+                "condition": "success",
+                "ref": "generate-apikey-jobrun"
               }
             ]
           }
