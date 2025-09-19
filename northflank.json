@@ -237,8 +237,7 @@
                       "USER_ID": "${args.user_id}",
                       "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
                       "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
-                      "WORKFLOW_TEMPLATES": "default",
-                      "N8N_API_KEY": "${args.n8n_api_key}"
+                      "WORKFLOW_TEMPLATES": "default"
                     },
                     "files": {},
                     "dockerSecretMounts": {}
@@ -319,8 +318,7 @@
                       "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
                       "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
                       "WEBHOOK_URL": "${args.webhook_url}",
-                      "WEBHOOK_TOKEN": "${args.webhook_token}",
-                      "N8N_API_KEY": "${args.n8n_api_key}"
+                      "WEBHOOK_TOKEN": "${args.webhook_token}"
                     },
                     "files": {},
                     "dockerSecretMounts": {}
