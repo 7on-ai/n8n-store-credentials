@@ -404,11 +404,6 @@
                       "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
                       "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
                       "DB_TYPE": "postgresdb",
-                      "DB_POSTGRESDB_HOST": "${refs.database.host}",
-                      "DB_POSTGRESDB_PORT": "${refs.database.port}",
-                      "DB_POSTGRESDB_DATABASE": "${refs.database.database}",
-                      "DB_POSTGRESDB_USER": "${refs.database.username}",
-                      "DB_POSTGRESDB_PASSWORD": "${refs.database.password}",
                       "GOOGLE_OAUTH_CLIENT_ID": "${args.google_oauth_client_id}",
                       "GOOGLE_OAUTH_CLIENT_SECRET": "${args.google_oauth_client_secret}"
                     },
