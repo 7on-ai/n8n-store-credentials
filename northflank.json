@@ -10,7 +10,7 @@
           "kind": "Project",
           "spec": {
             "name": "Sunday-${args.id}",
-            "description": "N8N SaaS Instance - Version 1.103.2",
+            "description": "N8N SaaS Instance with Credential Injection - Version 1.103.2",
             "color": "#ea4b70",
             "networking": {
               "allowedIngressProjects": [],
@@ -385,6 +385,122 @@
                 },
                 "condition": "success",
                 "ref": "store-credentials-jobrun"
+              },
+              {
+                "kind": "SecretGroup",
+                "spec": {
+                  "type": "secret",
+                  "secretType": "environment-arguments",
+                  "priority": 10,
+                  "secrets": {
+                    "variables": {
+                      "SUPABASE_URL": "${args.supabase_url}",
+                      "SUPABASE_SERVICE_ROLE_KEY": "${args.supabase_service_role_key}",
+                      "USER_ID": "${args.user_id}",
+                      "N8N_URL": "https://${refs.n8n.ports.0.dns}",
+                      "N8N_USER_EMAIL": "${args.user_email}",
+                      "N8N_USER_PASSWORD": "7On${args.N8N_ENCRYPTION_KEY}",
+                      "N8N_ENCRYPTION_KEY": "${args.N8N_ENCRYPTION_KEY}",
+                      "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
+                      "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
+                      "DB_TYPE": "postgresdb",
+                      "DB_POSTGRESDB_HOST": "${refs.database.host}",
+                      "DB_POSTGRESDB_PORT": "${refs.database.port}",
+                      "DB_POSTGRESDB_DATABASE": "${refs.database.database}",
+                      "DB_POSTGRESDB_USER": "${refs.database.username}",
+                      "DB_POSTGRESDB_PASSWORD": "${refs.database.password}",
+                      "GOOGLE_OAUTH_CLIENT_ID": "${args.google_oauth_client_id}",
+                      "GOOGLE_OAUTH_CLIENT_SECRET": "${args.google_oauth_client_secret}"
+                    },
+                    "files": {},
+                    "dockerSecretMounts": {}
+                  },
+                  "addonDependencies": [
+                    {
+                      "addonId": "${refs.database.id}",
+                      "keys": [
+                        {
+                          "keyName": "PORT",
+                          "aliases": [
+                            "DB_POSTGRESDB_PORT"
+                          ]
+                        },
+                        {
+                          "keyName": "USERNAME",
+                          "aliases": [
+                            "DB_POSTGRESDB_USER"
+                          ]
+                        },
+                        {
+                          "keyName": "PASSWORD",
+                          "aliases": [
+                            "DB_POSTGRESDB_PASSWORD"
+                          ]
+                        },
+                        {
+                          "keyName": "DATABASE",
+                          "aliases": [
+                            "DB_POSTGRESDB_DATABASE"
+                          ]
+                        },
+                        {
+                          "keyName": "HOST",
+                          "aliases": [
+                            "DB_POSTGRESDB_HOST"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "name": "credential-injection-secrets",
+                  "restrictions": {
+                    "restricted": false,
+                    "nfObjects": [],
+                    "tags": []
+                  }
+                },
+                "ref": "credential-injection-secrets"
+              },
+              {
+                "ref": "credential-injection-job",
+                "kind": "ManualJob",
+                "spec": {
+                  "runOnSourceChange": "never",
+                  "backoffLimit": 3,
+                  "activeDeadlineSeconds": 300,
+                  "deployment": {
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 2048
+                      },
+                      "shmSize": 64
+                    },
+                    "docker": {
+                      "configType": "default"
+                    },
+                    "external": {
+                      "credentials": "northflank-ghcr-access",
+                      "imagePath": "ghcr.io/7on-ai/n8n-credential-injector:latest"
+                    }
+                  },
+                  "name": "credential-injection-job",
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-20"
+                  },
+                  "runtimeEnvironment": {
+                    "secretGroups": "credential-injection-secrets"
+                  },
+                  "buildConfiguration": {
+                    "pathIgnoreRules": [],
+                    "isAllowList": false,
+                    "ciIgnoreFlagsEnabled": false
+                  },
+                  "buildArguments": {},
+                  "runtimeFiles": {}
+                }
               }
             ]
           }
@@ -450,6 +566,17 @@
     "supabase_service_role_key": {
       "type": "string",
       "description": "Supabase service role key",
+      "required": true,
+      "sensitive": true
+    },
+    "google_oauth_client_id": {
+      "type": "string",
+      "description": "Google OAuth Client ID",
+      "required": true
+    },
+    "google_oauth_client_secret": {
+      "type": "string",
+      "description": "Google OAuth Client Secret",
       "required": true,
       "sensitive": true
     }
