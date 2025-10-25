@@ -334,11 +334,13 @@
                 "ref": "store-credentials-secrets"
               },
               {
-                "kind": "ManualJob",
+                "kind": "Job",
                 "spec": {
-                  "runOnSourceChange": "never",
-                  "backoffLimit": 3,
-                  "activeDeadlineSeconds": 600,
+                  "settings": {
+                    "backoffLimit": 3,
+                    "activeDeadlineSeconds": 600,
+                    "runOnSourceChange": "never"
+                  },
                   "deployment": {
                     "storage": {
                       "ephemeralStorage": {
