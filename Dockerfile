@@ -7,7 +7,13 @@ RUN apk add --no-cache curl
 # Create app directory
 WORKDIR /app
 
-# Create the main script
+# Copy package files first (for better caching)
+COPY package*.json ./
+
+# Install dependencies (including pg)
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy the main script
 COPY store-credentials.js .
 
 # Make sure we have proper permissions

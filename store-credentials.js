@@ -3,17 +3,18 @@
 /**
  * Store N8N Credentials Script
  * This script sends N8N instance credentials to Neon Database
+ * Version: 2.1.0 - Enhanced with better retry logic and longer waits
  */
 
 import pg from 'pg';
 const { Client } = pg;
 
-console.log('[INFO] Starting N8N credentials storage process...');
+console.log('[INFO] Starting N8N credentials storage process v2.1.0...');
 
 // Get environment variables
-const DATABASE_URL = process.env.DATABASE_URL; // Neon connection string
-const CLERK_USER_ID = process.env.CLERK_USER_ID; // Clerk User ID
-const USER_EMAIL = process.env.USER_EMAIL; // User's email
+const DATABASE_URL = process.env.DATABASE_URL;
+const CLERK_USER_ID = process.env.CLERK_USER_ID;
+const USER_EMAIL = process.env.USER_EMAIL;
 const N8N_URL = process.env.N8N_URL;
 const N8N_USER_EMAIL = process.env.N8N_USER_EMAIL;
 const N8N_USER_PASSWORD = process.env.N8N_USER_PASSWORD;
@@ -60,7 +61,8 @@ async function connectToDatabase() {
       connectionString: DATABASE_URL,
       ssl: {
         rejectUnauthorized: false
-      }
+      },
+      connectionTimeoutMillis: 30000,
     });
     await client.connect();
     console.log('[SUCCESS] Connected to Neon database!');
@@ -76,7 +78,6 @@ async function checkExistingUser() {
   try {
     console.log('[INFO] Checking if user record already exists...');
     
-    // Prisma uses "User" table name with camelCase fields
     const query = `
       SELECT * FROM "User" 
       WHERE "clerkId" = $1
@@ -103,7 +104,6 @@ async function createUserRecord() {
   try {
     console.log('[INFO] Creating new user record...');
     
-    // Generate a cuid-like ID (simplified version)
     const generateId = () => {
       const timestamp = Date.now().toString(36);
       const randomStr = Math.random().toString(36).substring(2, 15);
@@ -136,22 +136,22 @@ async function createUserRecord() {
     const userId = generateId();
     
     const values = [
-      userId,                           // id
-      CLERK_USER_ID,                    // clerkId
-      USER_EMAIL,                       // email
-      'FREE',                           // subscriptionTier
-      0,                                // apiCallsCount
-      now,                              // usageResetAt
-      N8N_URL,                          // n8nUrl
-      N8N_USER_EMAIL,                   // n8nUserEmail
-      N8N_ENCRYPTION_KEY,               // n8nEncryptionKey
-      NORTHFLANK_PROJECT_ID,            // northflankProjectId
-      NORTHFLANK_PROJECT_NAME || 'N8N Instance', // northflankProjectName
-      'ready',                          // northflankProjectStatus
-      now,                              // northflankCreatedAt
-      now,                              // templateCompletedAt
-      now,                              // createdAt
-      now                               // updatedAt
+      userId,
+      CLERK_USER_ID,
+      USER_EMAIL,
+      'FREE',
+      0,
+      now,
+      N8N_URL,
+      N8N_USER_EMAIL,
+      N8N_ENCRYPTION_KEY,
+      NORTHFLANK_PROJECT_ID,
+      NORTHFLANK_PROJECT_NAME || 'N8N Instance',
+      'ready',
+      now,
+      now,
+      now,
+      now
     ];
     
     const result = await client.query(query, values);
@@ -189,17 +189,17 @@ async function updateUserRecord() {
     
     const now = new Date();
     const values = [
-      CLERK_USER_ID,                    // clerkId (WHERE clause)
-      USER_EMAIL,                       // email
-      N8N_URL,                          // n8nUrl
-      N8N_USER_EMAIL,                   // n8nUserEmail
-      N8N_ENCRYPTION_KEY,               // n8nEncryptionKey
-      NORTHFLANK_PROJECT_ID,            // northflankProjectId
-      NORTHFLANK_PROJECT_NAME || 'N8N Instance', // northflankProjectName
-      'ready',                          // northflankProjectStatus
-      now,                              // northflankCreatedAt
-      now,                              // templateCompletedAt
-      now                               // updatedAt
+      CLERK_USER_ID,
+      USER_EMAIL,
+      N8N_URL,
+      N8N_USER_EMAIL,
+      N8N_ENCRYPTION_KEY,
+      NORTHFLANK_PROJECT_ID,
+      NORTHFLANK_PROJECT_NAME || 'N8N Instance',
+      'ready',
+      now,
+      now,
+      now
     ];
     
     const result = await client.query(query, values);
@@ -211,19 +211,86 @@ async function updateUserRecord() {
   }
 }
 
-// Function to verify N8N instance is accessible
-async function verifyN8NInstance() {
-  try {
-    console.log('[INFO] Verifying N8N instance accessibility...');
-    
-    const endpoints = ['/healthz', '/healthz/readiness', '/'];
+// Enhanced: Function to wait for N8N to be fully ready with exponential backoff
+async function waitForN8NReady(maxRetries = 30, initialInterval = 10000) {
+  console.log('[INFO] Waiting for N8N to be fully ready (up to 10 minutes)...');
+  console.log(`[INFO] Will check ${maxRetries} times with exponential backoff`);
+  
+  const endpoints = ['/healthz/readiness', '/healthz', '/'];
+  
+  for (let i = 0; i < maxRetries; i++) {
+    // Exponential backoff: 10s, 15s, 20s, 25s, 30s (max)
+    const interval = Math.min(initialInterval + (i * 5000), 30000);
     
     for (const endpoint of endpoints) {
+      try {
+        console.log(`[INFO] Attempt ${i + 1}/${maxRetries}: Checking ${N8N_URL}${endpoint}`);
+        
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        
+        const response = await fetch(`${N8N_URL}${endpoint}`, {
+          method: 'GET',
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Northflank-Job/1.0',
+            'Accept': '*/*'
+          }
+        });
+        
+        clearTimeout(timeout);
+
+        if (response.ok) {
+          console.log(`[SUCCESS] N8N is ready! (via ${endpoint})`);
+          console.log(`[INFO] Response status: ${response.status}`);
+          
+          // Additional wait to ensure stability
+          console.log('[INFO] Waiting additional 15s for N8N to stabilize...');
+          await new Promise(resolve => setTimeout(resolve, 15000));
+          
+          return true;
+        } else {
+          console.log(`[DEBUG] Endpoint ${endpoint} returned: ${response.status}`);
+        }
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log(`[DEBUG] Request timeout for ${endpoint}`);
+        } else {
+          console.log(`[DEBUG] ${endpoint} error: ${error.message}`);
+        }
+      }
+    }
+    
+    if (i < maxRetries - 1) {
+      console.log(`[INFO] N8N not ready yet, waiting ${interval/1000}s before retry...`);
+      await new Promise(resolve => setTimeout(resolve, interval));
+    }
+  }
+  
+  console.log('[WARNING] Max retries reached, but proceeding anyway...');
+  console.log('[WARNING] N8N might still be starting up');
+  return false;
+}
+
+// Enhanced: Verify N8N instance with detailed logging
+async function verifyN8NInstance() {
+  try {
+    console.log('[INFO] Final verification of N8N instance...');
+    
+    const endpoints = [
+      { path: '/healthz', name: 'Health Check' },
+      { path: '/healthz/readiness', name: 'Readiness Check' },
+      { path: '/', name: 'Root Path' }
+    ];
+    
+    let successCount = 0;
+    
+    for (const { path, name } of endpoints) {
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
         
-        const response = await fetch(`${N8N_URL}${endpoint}`, {
+        const response = await fetch(`${N8N_URL}${path}`, {
           method: 'GET',
           signal: controller.signal
         });
@@ -231,74 +298,60 @@ async function verifyN8NInstance() {
         clearTimeout(timeout);
 
         if (response.ok) {
-          console.log(`[SUCCESS] N8N instance is accessible via ${endpoint}`);
-          return true;
+          console.log(`[SUCCESS] ${name} (${path}): OK`);
+          successCount++;
+        } else {
+          console.log(`[WARNING] ${name} (${path}): ${response.status}`);
         }
       } catch (error) {
-        console.log(`[DEBUG] Endpoint ${endpoint} failed: ${error.message}`);
-        continue;
+        console.log(`[WARNING] ${name} (${path}): ${error.message}`);
       }
     }
     
-    console.log('[WARNING] N8N health checks failed, but continuing...');
+    if (successCount > 0) {
+      console.log(`[SUCCESS] N8N verification passed (${successCount}/${endpoints.length} checks)`);
+      return true;
+    }
+    
+    console.log('[WARNING] All N8N health checks failed, but continuing...');
     return true;
   } catch (error) {
-    console.log(`[WARNING] N8N verification failed: ${error.message}, but continuing...`);
+    console.log(`[WARNING] Verification failed: ${error.message}, continuing...`);
     return true;
   }
-}
-
-// Function to wait for N8N to be fully ready
-async function waitForN8NReady(maxRetries = 12, interval = 10000) {
-  console.log('[INFO] Waiting for N8N to be fully ready...');
-  
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(`${N8N_URL}/healthz/readiness`, {
-        method: 'GET',
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeout);
-
-      if (response.ok) {
-        console.log('[SUCCESS] N8N is ready!');
-        return true;
-      }
-      
-      console.log(`[INFO] Attempt ${i + 1}/${maxRetries}: N8N not ready yet, waiting ${interval/1000}s...`);
-      await new Promise(resolve => setTimeout(resolve, interval));
-    } catch (error) {
-      console.log(`[INFO] Attempt ${i + 1}/${maxRetries}: ${error.message}, retrying...`);
-      await new Promise(resolve => setTimeout(resolve, interval));
-    }
-  }
-  
-  console.log('[WARNING] Max retries reached, proceeding anyway...');
-  return false;
 }
 
 // Main execution
 async function main() {
+  const startTime = Date.now();
+  
   try {
     console.log('[INFO] Starting main execution...');
+    console.log(`[INFO] Target N8N URL: ${N8N_URL}`);
+    console.log(`[INFO] Target User: ${USER_EMAIL}`);
     
     // Step 1: Connect to database
+    console.log('\n=== STEP 1: DATABASE CONNECTION ===');
     await connectToDatabase();
     
-    // Step 2: Wait for N8N to be ready
-    await waitForN8NReady();
+    // Step 2: Wait for N8N to be ready (with longer timeout)
+    console.log('\n=== STEP 2: WAIT FOR N8N ===');
+    const n8nReady = await waitForN8NReady();
+    
+    if (!n8nReady) {
+      console.log('[WARNING] N8N might not be fully ready, but continuing...');
+    }
     
     // Step 3: Verify N8N instance
+    console.log('\n=== STEP 3: VERIFY N8N INSTANCE ===');
     await verifyN8NInstance();
     
     // Step 4: Check if user already exists
+    console.log('\n=== STEP 4: CHECK EXISTING USER ===');
     const existingUser = await checkExistingUser();
     
     // Step 5: Create or update user record
+    console.log('\n=== STEP 5: UPDATE DATABASE ===');
     if (existingUser) {
       console.log('[INFO] User record exists, updating...');
       await updateUserRecord();
@@ -307,9 +360,13 @@ async function main() {
       await createUserRecord();
     }
     
-    console.log('[SUCCESS] All operations completed successfully!');
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    
+    console.log('\n=== SUCCESS ===');
+    console.log(`[SUCCESS] All operations completed in ${duration}s`);
     console.log(`[INFO] N8N instance available at: ${N8N_URL}`);
     console.log(`[INFO] Login with: ${N8N_USER_EMAIL}`);
+    console.log(`[INFO] Password: 7On[ENCRYPTION_KEY]`);
     console.log(`[INFO] Project ID: ${NORTHFLANK_PROJECT_ID}`);
     console.log(`[INFO] Clerk User ID: ${CLERK_USER_ID}`);
     
@@ -320,12 +377,16 @@ async function main() {
     process.exit(0);
     
   } catch (error) {
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    
+    console.error(`\n=== FAILURE (after ${duration}s) ===`);
     console.error('[FATAL] Main execution failed:', error.message);
     console.error('[FATAL] Stack trace:', error.stack);
     
     // Try to update status as failed
     try {
       if (client) {
+        console.log('[INFO] Attempting to update error status in database...');
         const query = `
           UPDATE "User" 
           SET "northflankProjectStatus" = $1, 
@@ -335,10 +396,11 @@ async function main() {
         `;
         await client.query(query, [
           'failed', 
-          error.message, 
+          error.message.substring(0, 500), 
           new Date(), 
           CLERK_USER_ID
         ]);
+        console.log('[INFO] Error status updated in database');
         await client.end();
       }
     } catch (updateError) {
@@ -362,6 +424,21 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
+// Handle termination signals
+process.on('SIGTERM', () => {
+  console.log('[INFO] Received SIGTERM signal, cleaning up...');
+  if (client) {
+    client.end().then(() => {
+      console.log('[INFO] Database connection closed');
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+});
+
 // Start the process
-console.log('[INFO] Initializing...');
+console.log('[INFO] Initializing store-credentials script...');
+console.log('[INFO] Node version:', process.version);
+console.log('[INFO] Working directory:', process.cwd());
 main();
