@@ -1,17 +1,19 @@
 {
   "name": "n8n-store-credentials",
-  "version": "1.0.0",
-  "description": "Automated N8N credentials storage for Supabase",
+  "version": "2.0.0",
+  "description": "Automated N8N credentials storage for Neon Database",
   "main": "store-credentials.js",
+  "type": "module",
   "scripts": {
     "start": "node store-credentials.js",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [
     "n8n",
-    "supabase",
+    "neon",
     "northflank",
-    "automation"
+    "automation",
+    "postgresql"
   ],
   "author": "7on-ai",
   "license": "MIT",
@@ -19,6 +21,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "node-fetch": "^3.3.2"
+    "pg": "^8.11.3"
   }
 }
