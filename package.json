@@ -2,10 +2,10 @@
   "name": "n8n-store-credentials",
   "version": "2.0.0",
   "description": "Automated N8N credentials storage for Neon Database",
-  "main": "store-credentials.js",
+  "main": "store-credentials.mjs",
   "type": "module",
   "scripts": {
-    "start": "node store-credentials.js",
+    "start": "node store-credentials.mjs",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [
