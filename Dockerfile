@@ -13,11 +13,11 @@ COPY package*.json ./
 # Install dependencies (including pg)
 RUN npm ci --only=production && npm cache clean --force
 
-# Copy the main script
-COPY store-credentials.js .
+# Copy the main script with .mjs extension
+COPY store-credentials.mjs .
 
 # Make sure we have proper permissions
-RUN chmod +x store-credentials.js
+RUN chmod +x store-credentials.mjs
 
-# Set the entrypoint
-ENTRYPOINT ["node", "/app/store-credentials.js"]
+# Set the entrypoint to use .mjs file
+ENTRYPOINT ["node", "/app/store-credentials.mjs"]
