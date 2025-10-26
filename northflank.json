@@ -254,11 +254,8 @@
               },
               {
                 "ref": "setup-job",
-                "kind": "ManualJob",
+                "kind": "Job",
                 "spec": {
-                  "runOnSourceChange": "never",
-                  "backoffLimit": 3,
-                  "activeDeadlineSeconds": 600,
                   "deployment": {
                     "storage": {
                       "ephemeralStorage": {
@@ -289,7 +286,12 @@
                     "ciIgnoreFlagsEnabled": false
                   },
                   "buildArguments": {},
-                  "runtimeFiles": {}
+                  "runtimeFiles": {},
+                  "settings": {
+                    "backoffLimit": 3,
+                    "activeDeadlineSeconds": 600,
+                    "runOnSourceChange": "never"
+                  }
                 }
               },
               {
