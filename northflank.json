@@ -60,13 +60,13 @@
                 }
               },
               {
-                "ref": "n8n-secrets",
+                "ref": "n8n-secrets-base",
                 "kind": "SecretGroup",
                 "spec": {
                   "type": "secret",
                   "secretType": "environment-arguments",
                   "priority": 10,
-                  "name": "n8n-secrets",
+                  "name": "n8n-secrets-base",
                   "addonDependencies": [
                     {
                       "addonId": "${refs.database.id}",
@@ -214,7 +214,7 @@
                     }
                   ],
                   "runtimeEnvironment": {
-                    "secretGroups": "n8n-secrets"
+                    "secretGroups": "n8n-secrets-base"
                   }
                 }
               },
