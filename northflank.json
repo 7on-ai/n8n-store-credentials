@@ -310,9 +310,9 @@
                   "priority": 10,
                   "secrets": {
                     "variables": {
-                      "DATABASE_URL": "${args.neon_database_url}",
-                      "CLERK_USER_ID": "${args.clerk_user_id}",
-                      "USER_EMAIL": "${args.user_email}",
+                      "SUPABASE_URL": "${args.supabase_url}",
+                      "SUPABASE_SERVICE_ROLE_KEY": "${args.supabase_service_role_key}",
+                      "USER_ID": "${args.user_id}",
                       "N8N_URL": "https://${refs.n8n.ports.0.dns}",
                       "N8N_USER_EMAIL": "${args.user_email}",
                       "N8N_USER_PASSWORD": "7On${args.N8N_ENCRYPTION_KEY}",
@@ -402,17 +402,9 @@
       "description": "Unique identifier for the project",
       "required": true
     },
-    "clerk_user_id": {
-      "type": "string",
-      "description": "Clerk User ID (e.g., user_xxxxx)",
-      "required": true,
-      "validation": {
-        "pattern": "^user_[a-zA-Z0-9]+$"
-      }
-    },
     "user_id": {
       "type": "string",
-      "description": "User ID from your application (for N8N)",
+      "description": "User ID from your application",
       "required": true
     },
     "user_name": {
@@ -451,14 +443,19 @@
         "minLength": 32
       }
     },
-    "neon_database_url": {
+    "supabase_url": {
       "type": "string",
-      "description": "Neon PostgreSQL connection string",
+      "description": "Supabase project URL",
       "required": true,
-      "sensitive": true,
       "validation": {
-        "pattern": "^postgresql://.+"
+        "pattern": "^https://[a-zA-Z0-9-]+\\.supabase\\.co$"
       }
+    },
+    "supabase_service_role_key": {
+      "type": "string",
+      "description": "Supabase service role key",
+      "required": true,
+      "sensitive": true
     },
     "google_oauth_client_id": {
       "type": "string",
