@@ -104,6 +104,18 @@
                         {
                           "keyName": "EXTERNAL_PORT_PRIMARY",
                           "aliases": []
+                        },
+                        {
+                          "keyName": "EXTERNAL_POSTGRES_URI_ADMIN",
+                          "aliases": []
+                        },
+                        {
+                          "keyName": "EXTERNAL_JDBC_POSTGRES_URI",
+                          "aliases": []
+                        },
+                        {
+                          "keyName": "EXTERNAL_JDBC_POSTGRES_URI_ADMIN",
+                          "aliases": []
                         }
                       ]
                     }
