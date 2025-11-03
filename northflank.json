@@ -79,23 +79,39 @@
                       "keys": [
                         {
                           "keyName": "HOST",
-                          "aliases": []
+                          "aliases": [
+                            "DB_POSTGRESDB_HOST"
+                          ]
+                        },
+                        {
+                          "keyName": "PORT",
+                          "aliases": [
+                            "DB_POSTGRESDB_PORT"
+                          ]
                         },
                         {
                           "keyName": "POSTGRES_URI",
-                          "aliases": []
+                          "aliases": [
+                            "DB_POSTGRESDB_CONNECTION_STRING"
+                          ]
                         },
                         {
                           "keyName": "USERNAME",
-                          "aliases": []
+                          "aliases": [
+                            "DB_POSTGRESDB_USER"
+                          ]
                         },
                         {
                           "keyName": "PASSWORD",
-                          "aliases": []
+                          "aliases": [
+                            "DB_POSTGRESDB_PASSWORD"
+                          ]
                         },
                         {
                           "keyName": "DATABASE",
-                          "aliases": []
+                          "aliases": [
+                            "DB_POSTGRESDB_DATABASE"
+                          ]
                         },
                         {
                           "keyName": "EXTERNAL_POSTGRES_URI",
@@ -103,18 +119,6 @@
                         },
                         {
                           "keyName": "EXTERNAL_PORT_PRIMARY",
-                          "aliases": []
-                        },
-                        {
-                          "keyName": "EXTERNAL_POSTGRES_URI_ADMIN",
-                          "aliases": []
-                        },
-                        {
-                          "keyName": "EXTERNAL_JDBC_POSTGRES_URI",
-                          "aliases": []
-                        },
-                        {
-                          "keyName": "EXTERNAL_JDBC_POSTGRES_URI_ADMIN",
                           "aliases": []
                         }
                       ]
@@ -124,6 +128,7 @@
                     "variables": {
                       "DB_TYPE": "postgresdb",
                       "DB_POSTGRESDB_SSL": "true",
+                      "DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED": "false",
                       "N8N_ENCRYPTION_KEY": "${args.N8N_ENCRYPTION_KEY}",
                       "N8N_USER_MANAGEMENT_JWT_SECRET": "${args.N8N_ENCRYPTION_KEY}",
                       "N8N_USER_MANAGEMENT_DISABLED": "false",
@@ -132,7 +137,9 @@
                       "N8N_PROXY_HOPS": "1",
                       "N8N_DIAGNOSTICS_ENABLED": "false",
                       "N8N_PERSONALIZATION_ENABLED": "false",
-                      "TINI_SUBREAPER": "1"
+                      "TINI_SUBREAPER": "1",
+                      "N8N_LOG_LEVEL": "info",
+                      "N8N_LOG_OUTPUT": "console"
                     },
                     "files": {},
                     "dockerSecretMounts": {}
@@ -212,17 +219,17 @@
                       "type": "startupProbe",
                       "port": 5678,
                       "path": "/healthz",
-                      "initialDelaySeconds": 30,
+                      "initialDelaySeconds": 45,
                       "periodSeconds": 15,
                       "timeoutSeconds": 10,
-                      "failureThreshold": 10
+                      "failureThreshold": 15
                     },
                     {
                       "protocol": "HTTP",
                       "type": "livenessProbe",
                       "port": 5678,
                       "path": "/healthz",
-                      "initialDelaySeconds": 30,
+                      "initialDelaySeconds": 60,
                       "periodSeconds": 60,
                       "timeoutSeconds": 10,
                       "failureThreshold": 3
@@ -232,16 +239,15 @@
                       "type": "readinessProbe",
                       "port": 5678,
                       "path": "/healthz/readiness",
-                      "initialDelaySeconds": 30,
-                      "periodSeconds": 60,
+                      "initialDelaySeconds": 45,
+                      "periodSeconds": 30,
                       "timeoutSeconds": 10,
                       "failureThreshold": 3,
                       "successThreshold": 1
                     }
                   ],
                   "runtimeEnvironment": {
-                    "secretGroups": "n8n-secrets-base,setup-secrets",
-                    "DB_POSTGRESDB_CONNECTION_STRING": "${NF_DATABASE_EXTERNAL_POSTGRES_URI}"
+                    "secretGroups": "n8n-secrets-base,setup-secrets"
                   },
                   "runtimeFiles": {}
                 }
@@ -283,7 +289,7 @@
                       "DATABASE_URL": "${args.neon_database_url}",
                       "DB_TYPE": "postgresdb",
                       "DB_POSTGRESDB_SSL": "true",
-                      "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS": "true",
+                      "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS": "false",
                       "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
                       "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
                       "WORKFLOW_TEMPLATES": "default"
