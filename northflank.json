@@ -44,6 +44,12 @@
                     "storageClass": "ssd",
                     "storage": 4096,
                     "replicas": 1
+                  },
+                  "tlsEnabled": true,
+                  "externalAccessEnabled": true,
+                  "typeSpecificSettings": {
+                    "postgresqlConnectionPoolerReplicas": 2,
+                    "postgresqlReadConnectionPoolerReplicas": 2
                   }
                 }
               },
