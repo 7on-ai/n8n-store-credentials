@@ -241,7 +241,8 @@
                   "kind": "Service",
                   "spec": {
                     "data": {
-                      "serviceId": "${refs.n8n.id}"
+                      "serviceId": "${refs.n8n.id}",
+                      "projectId": "${refs.project.id}"
                     },
                     "type": "running"
                   }
