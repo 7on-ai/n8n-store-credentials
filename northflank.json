@@ -78,27 +78,9 @@
                       "addonId": "${refs.database.id}",
                       "keys": [
                         {
-                          "keyName": "PORT",
+                          "keyName": "POSTGRES_URI",
                           "aliases": [
-                            "DB_POSTGRESDB_PORT"
-                          ]
-                        },
-                        {
-                          "keyName": "USERNAME",
-                          "aliases": [
-                            "DB_POSTGRESDB_USER"
-                          ]
-                        },
-                        {
-                          "keyName": "PASSWORD",
-                          "aliases": [
-                            "DB_POSTGRESDB_PASSWORD"
-                          ]
-                        },
-                        {
-                          "keyName": "DATABASE",
-                          "aliases": [
-                            "DB_POSTGRESDB_DATABASE"
+                            "DATABASE_URL"
                           ]
                         }
                       ]
@@ -107,7 +89,6 @@
                   "secrets": {
                     "variables": {
                       "DB_TYPE": "postgresdb",
-                      "DB_POSTGRESDB_HOST": "database.internal",
                       "DB_POSTGRESDB_SSL": "true",
                       "N8N_ENCRYPTION_KEY": "${args.N8N_ENCRYPTION_KEY}",
                       "N8N_USER_MANAGEMENT_JWT_SECRET": "${args.N8N_ENCRYPTION_KEY}",
