@@ -100,12 +100,6 @@
                           "aliases": [
                             "DB_POSTGRESDB_DATABASE"
                           ]
-                        },
-                        {
-                          "keyName": "HOST",
-                          "aliases": [
-                            "DB_POSTGRESDB_HOST"
-                          ]
                         }
                       ]
                     }
@@ -113,6 +107,8 @@
                   "secrets": {
                     "variables": {
                       "DB_TYPE": "postgresdb",
+                      "DB_POSTGRESDB_HOST": "database.internal",
+                      "DB_POSTGRESDB_SSL": "true",
                       "N8N_ENCRYPTION_KEY": "${args.N8N_ENCRYPTION_KEY}",
                       "N8N_USER_MANAGEMENT_JWT_SECRET": "${args.N8N_ENCRYPTION_KEY}",
                       "N8N_USER_MANAGEMENT_DISABLED": "false",
@@ -121,11 +117,8 @@
                       "N8N_PROXY_HOPS": "1",
                       "N8N_DIAGNOSTICS_ENABLED": "false",
                       "N8N_PERSONALIZATION_ENABLED": "false",
-                      "TINI_SUBREAPER": "1",
-                      "DB_POSTGRESDB_SSL": "true"
-                    },
-                    "files": {},
-                    "dockerSecretMounts": {}
+                      "TINI_SUBREAPER": "1"
+                    }
                   },
                   "restrictions": {
                     "restricted": false,
