@@ -78,10 +78,24 @@
                       "addonId": "${refs.database.id}",
                       "keys": [
                         {
+                          "keyName": "HOST",
+                          "aliases": []
+                        },
+                        {
                           "keyName": "POSTGRES_URI",
-                          "aliases": [
-                            "DATABASE_URL"
-                          ]
+                          "aliases": []
+                        },
+                        {
+                          "keyName": "USERNAME",
+                          "aliases": []
+                        },
+                        {
+                          "keyName": "PASSWORD",
+                          "aliases": []
+                        },
+                        {
+                          "keyName": "DATABASE",
+                          "aliases": []
                         }
                       ]
                     }
