@@ -96,6 +96,14 @@
                         {
                           "keyName": "DATABASE",
                           "aliases": []
+                        },
+                        {
+                          "keyName": "EXTERNAL_POSTGRES_URI",
+                          "aliases": []
+                        },
+                        {
+                          "keyName": "EXTERNAL_PORT_PRIMARY",
+                          "aliases": []
                         }
                       ]
                     }
