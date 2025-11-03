@@ -231,7 +231,7 @@
                     }
                   ],
                   "runtimeEnvironment": {
-                    "secretGroups": "n8n-secrets-base"
+                    "secretGroups": "n8n-secrets-base,setup-secrets"
                   }
                 }
               },
@@ -241,8 +241,7 @@
                   "kind": "Service",
                   "spec": {
                     "data": {
-                      "serviceId": "${refs.n8n.id}",
-                      "projectId": "${refs.project.id}"
+                      "serviceId": "${refs.n8n.id}"
                     },
                     "type": "running"
                   }
@@ -271,6 +270,9 @@
                       "CLERK_USER_ID": "${args.clerk_user_id}",
                       "USER_EMAIL": "${args.user_email}",
                       "DATABASE_URL": "${args.neon_database_url}",
+                      "DB_TYPE": "postgresdb",
+                      "DB_POSTGRESDB_SSL": "true",
+                      "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS": "true",
                       "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
                       "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
                       "WORKFLOW_TEMPLATES": "default"
