@@ -359,22 +359,15 @@
                 "ref": "user-lora-training",
                 "kind": "Job",
                 "spec": {
-                  "name": "user-lora-training",
-                  "infrastructure": {
-                    "architecture": "x86"
-                  },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-200-8"
-                  },
                   "settings": {
+                    "backoffLimit": 3,
+                    "activeDeadlineSeconds": 1800,
+                    "runOnSourceChange": "never",
                     "cron": {
                       "suspended": false,
                       "schedule": "11 11 * * 0",
                       "concurrencyPolicy": "forbid"
-                    },
-                    "backoffLimit": 3,
-                    "activeDeadlineSeconds": 1800,
-                    "runOnSourceChange": "never"
+                    }
                   },
                   "deployment": {
                     "storage": {
@@ -387,9 +380,16 @@
                       "configType": "default"
                     },
                     "external": {
-                      "imagePath": "ghcr.io/7on-ai/lora-trainer:latest",
-                      "credentials": "northflank-ghcr-access"
+                      "credentials": "northflank-ghcr-access",
+                      "imagePath": "ghcr.io/7on-ai/lora-trainer:latest"
                     }
+                  },
+                  "name": "user-lora-training",
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-200-8"
                   },
                   "runtimeEnvironment": {
                     "secretGroups": "setup-secrets"
@@ -399,7 +399,8 @@
                     "isAllowList": false,
                     "ciIgnoreFlagsEnabled": false
                   },
-                  "buildArguments": {}
+                  "buildArguments": {},
+                  "runtimeFiles": {}
                 }
               },
               {
@@ -418,10 +419,11 @@
                     }
                   ],
                   "name": "lora-adapters",
+                  "tags": [],
                   "attachedObjects": [
                     {
-                      "id": "${refs.n8n.id}",
-                      "type": "service"
+                      "id": "user-lora-training",
+                      "type": "job"
                     }
                   ]
                 }
