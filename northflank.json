@@ -10,7 +10,7 @@
           "kind": "Project",
           "spec": {
             "name": "Sunday-${args.id}",
-            "description": "N8N SaaS Instance with Neon Database v2",
+            "description": "N8N SaaS Instance with Neon Database and LoRA Training",
             "color": "#ea4b70",
             "networking": {
               "allowedIngressProjects": [],
@@ -63,6 +63,24 @@
                     },
                     "type": "running"
                   }
+                }
+              },
+              {
+                "ref": "lora-adapters",
+                "kind": "Volume",
+                "spec": {
+                  "spec": {
+                    "accessMode": "ReadWriteOnce",
+                    "storageSize": 6144,
+                    "storageClassName": "ssd"
+                  },
+                  "mounts": [
+                    {
+                      "containerMountPath": "/workspace/adapters",
+                      "volumeMountPath": ""
+                    }
+                  ],
+                  "name": "lora-adapters"
                 }
               },
               {
@@ -292,7 +310,9 @@
                       "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS": "false",
                       "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
                       "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
-                      "WORKFLOW_TEMPLATES": "default"
+                      "WORKFLOW_TEMPLATES": "default",
+                      "OUTPUT_PATH": "/workspace/adapters",
+                      "PYTHONUNBUFFERED": "1"
                     },
                     "files": {},
                     "dockerSecretMounts": {}
@@ -352,6 +372,53 @@
                 },
                 "condition": "success",
                 "ref": "n8n-setup-jobrun"
+              },
+              {
+                "ref": "user-lora-training",
+                "kind": "Job",
+                "spec": {
+                  "name": "user-lora-training",
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-200-8"
+                  },
+                  "settings": {
+                    "cron": {
+                      "suspended": false,
+                      "schedule": "11 11 * * 0",
+                      "concurrencyPolicy": "forbid"
+                    },
+                    "backoffLimit": 3,
+                    "activeDeadlineSeconds": 1800,
+                    "runOnSourceChange": "never"
+                  },
+                  "deployment": {
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 1024
+                      },
+                      "shmSize": 64
+                    },
+                    "docker": {
+                      "configType": "default"
+                    },
+                    "external": {
+                      "imagePath": "ghcr.io/7on-ai/lora-trainer:latest",
+                      "credentials": "northflank-ghcr-access"
+                    }
+                  },
+                  "runtimeEnvironment": {
+                    "secretGroups": "setup-secrets"
+                  },
+                  "buildConfiguration": {
+                    "pathIgnoreRules": [],
+                    "isAllowList": false,
+                    "ciIgnoreFlagsEnabled": false
+                  },
+                  "buildArguments": {}
+                }
               }
             ]
           }
