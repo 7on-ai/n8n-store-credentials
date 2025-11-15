@@ -66,24 +66,6 @@
                 }
               },
               {
-                "ref": "lora-adapters",
-                "kind": "Volume",
-                "spec": {
-                  "spec": {
-                    "accessMode": "ReadWriteOnce",
-                    "storageSize": 6144,
-                    "storageClassName": "ssd"
-                  },
-                  "mounts": [
-                    {
-                      "containerMountPath": "/workspace/adapters",
-                      "volumeMountPath": ""
-                    }
-                  ],
-                  "name": "lora-adapters"
-                }
-              },
-              {
                 "ref": "n8n-secrets-base",
                 "kind": "SecretGroup",
                 "spec": {
@@ -418,6 +400,30 @@
                     "ciIgnoreFlagsEnabled": false
                   },
                   "buildArguments": {}
+                }
+              },
+              {
+                "ref": "lora-adapters",
+                "kind": "Volume",
+                "spec": {
+                  "spec": {
+                    "accessMode": "ReadWriteOnce",
+                    "storageSize": 6144,
+                    "storageClassName": "ssd"
+                  },
+                  "mounts": [
+                    {
+                      "containerMountPath": "/workspace/adapters",
+                      "volumeMountPath": ""
+                    }
+                  ],
+                  "name": "lora-adapters",
+                  "attachedObjects": [
+                    {
+                      "id": "${refs.n8n.id}",
+                      "type": "service"
+                    }
+                  ]
                 }
               }
             ]
