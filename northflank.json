@@ -12,12 +12,6 @@
             "name": "Sunday-${args.id}",
             "description": "N8N SaaS Instance with Neon Database and LoRA Training",
             "color": "#ea4b70",
-            "networking": {
-              "allowedIngressProjects": [],
-              "hostAliases": {
-                "enabled": false
-              }
-            },
             "region": "asia-southeast"
           }
         },
@@ -140,9 +134,7 @@
                       "TINI_SUBREAPER": "1",
                       "N8N_LOG_LEVEL": "info",
                       "N8N_LOG_OUTPUT": "console"
-                    },
-                    "files": {},
-                    "dockerSecretMounts": {}
+                    }
                   },
                   "restrictions": {
                     "restricted": false,
@@ -155,35 +147,23 @@
                 "ref": "n8n",
                 "kind": "DeploymentService",
                 "spec": {
-                  "deployment": {
-                    "instances": 1,
-                    "storage": {
-                      "ephemeralStorage": {
-                        "storageSize": 1024
-                      },
-                      "shmSize": 64
-                    },
-                    "docker": {
-                      "configType": "default"
-                    },
-                    "type": "deployment",
-                    "external": {
-                      "imagePath": "docker.n8n.io/n8nio/n8n:latest"
-                    },
-                    "metadata": {
-                      "labels": {},
-                      "annotations": {}
-                    }
-                  },
-                  "loadBalancing": {
-                    "mode": "leastConnection"
-                  },
                   "name": "n8n",
                   "infrastructure": {
                     "architecture": "x86"
                   },
                   "billing": {
                     "deploymentPlan": "nf-compute-100-2"
+                  },
+                  "deployment": {
+                    "instances": 1,
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 1024
+                      }
+                    },
+                    "external": {
+                      "imagePath": "docker.n8n.io/n8nio/n8n:latest"
+                    }
                   },
                   "autoscaling": {
                     "horizontal": {
@@ -242,14 +222,12 @@
                       "initialDelaySeconds": 45,
                       "periodSeconds": 30,
                       "timeoutSeconds": 10,
-                      "failureThreshold": 3,
-                      "successThreshold": 1
+                      "failureThreshold": 3
                     }
                   ],
                   "runtimeEnvironment": {
                     "secretGroups": "n8n-secrets-base,setup-secrets"
-                  },
-                  "runtimeFiles": {}
+                  }
                 }
               },
               {
@@ -295,9 +273,7 @@
                       "WORKFLOW_TEMPLATES": "default",
                       "OUTPUT_PATH": "/workspace/adapters",
                       "PYTHONUNBUFFERED": "1"
-                    },
-                    "files": {},
-                    "dockerSecretMounts": {}
+                    }
                   },
                   "restrictions": {
                     "restricted": false,
@@ -321,11 +297,7 @@
                     "storage": {
                       "ephemeralStorage": {
                         "storageSize": 1024
-                      },
-                      "shmSize": 64
-                    },
-                    "docker": {
-                      "configType": "default"
+                      }
                     },
                     "external": {
                       "imagePath": "ghcr.io/7on-ai/7on-n8n:latest"
@@ -356,54 +328,6 @@
                 "ref": "n8n-setup-jobrun"
               },
               {
-                "ref": "user-lora-training",
-                "kind": "Job",
-                "spec": {
-                  "settings": {
-                    "backoffLimit": 3,
-                    "activeDeadlineSeconds": 1800,
-                    "runOnSourceChange": "never",
-                    "cron": {
-                      "suspended": false,
-                      "schedule": "11 11 * * 0",
-                      "concurrencyPolicy": "forbid"
-                    }
-                  },
-                  "deployment": {
-                    "storage": {
-                      "ephemeralStorage": {
-                        "storageSize": 1024
-                      },
-                      "shmSize": 64
-                    },
-                    "docker": {
-                      "configType": "default"
-                    },
-                    "external": {
-                      "credentials": "northflank-ghcr-access",
-                      "imagePath": "ghcr.io/7on-ai/lora-trainer:latest"
-                    }
-                  },
-                  "name": "user-lora-training",
-                  "infrastructure": {
-                    "architecture": "x86"
-                  },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-200-8"
-                  },
-                  "runtimeEnvironment": {
-                    "secretGroups": "setup-secrets"
-                  },
-                  "buildConfiguration": {
-                    "pathIgnoreRules": [],
-                    "isAllowList": false,
-                    "ciIgnoreFlagsEnabled": false
-                  },
-                  "buildArguments": {},
-                  "runtimeFiles": {}
-                }
-              },
-              {
                 "ref": "lora-adapters",
                 "kind": "Volume",
                 "spec": {
@@ -418,14 +342,50 @@
                       "volumeMountPath": ""
                     }
                   ],
-                  "name": "lora-adapters",
-                  "tags": [],
-                  "attachedObjects": [
-                    {
-                      "id": "user-lora-training",
-                      "type": "job"
+                  "name": "lora-adapters"
+                }
+              },
+              {
+                "ref": "user-lora-training",
+                "kind": "Job",
+                "spec": {
+                  "name": "user-lora-training",
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-200-8"
+                  },
+                  "deployment": {
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 1024
+                      }
+                    },
+                    "external": {
+                      "credentials": "northflank-ghcr-access",
+                      "imagePath": "ghcr.io/7on-ai/lora-trainer:latest"
                     }
-                  ]
+                  },
+                  "runtimeEnvironment": {
+                    "secretGroups": "setup-secrets"
+                  },
+                  "settings": {
+                    "backoffLimit": 3,
+                    "activeDeadlineSeconds": 1800,
+                    "runOnSourceChange": "never",
+                    "cron": {
+                      "suspended": false,
+                      "schedule": "11 11 * * 0",
+                      "concurrencyPolicy": "forbid"
+                    }
+                  },
+                  "buildConfiguration": {
+                    "pathIgnoreRules": [],
+                    "isAllowList": false,
+                    "ciIgnoreFlagsEnabled": false
+                  },
+                  "buildArguments": {}
                 }
               }
             ]
@@ -442,55 +402,40 @@
     },
     "clerk_user_id": {
       "type": "string",
-      "description": "Clerk User ID (e.g., user_xxxxx)",
-      "required": true,
-      "validation": {
-        "pattern": "^user_[a-zA-Z0-9]+$"
-      }
+      "description": "Clerk User ID",
+      "required": true
     },
     "user_id": {
       "type": "string",
-      "description": "User ID from your application",
+      "description": "Application User ID",
       "required": true
     },
     "user_name": {
       "type": "string",
-      "description": "User's name for N8N setup",
+      "description": "User's name",
       "required": true
     },
     "user_email": {
       "type": "string",
-      "description": "User's email for N8N login",
-      "required": true,
-      "validation": {
-        "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
-      }
+      "description": "User's email",
+      "required": true
     },
     "N8N_ENCRYPTION_KEY": {
       "type": "string",
-      "description": "N8N encryption key (min 32 characters)",
+      "description": "N8N encryption key (min 32 chars)",
       "required": true,
-      "sensitive": true,
-      "validation": {
-        "minLength": 32
-      }
+      "sensitive": true
     },
     "neon_database_url": {
       "type": "string",
       "description": "Neon PostgreSQL connection string",
       "required": true,
-      "sensitive": true,
-      "validation": {
-        "pattern": "^postgresql://.+"
-      }
+      "sensitive": true
     }
   },
-  "name": "Sunday",
-  "description": "Infra-n8n Latest Version & n8n-setup ",
   "options": {
     "autorun": false,
-    "concurrencyPolicy": "allow",
-    "runOnUpdate": false
+    "concurrencyPolicy": "allow"
   },
   "gitops": {
     "repoUrl": "https://github.com/7on-ai/n8n-store-credentials",
