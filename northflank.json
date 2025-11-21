@@ -356,31 +356,6 @@
                 "ref": "n8n-setup-jobrun"
               },
               {
-                "ref": "lora-adapters",
-                "kind": "Volume",
-                "spec": {
-                  "spec": {
-                    "accessMode": "ReadWriteOnce",
-                    "storageSize": 6144,
-                    "storageClassName": "ssd"
-                  },
-                  "mounts": [
-                    {
-                      "containerMountPath": "/models/adapters",
-                      "volumeMountPath": ""
-                    }
-                  ],
-                  "name": "lora-adapters",
-                  "tags": [],
-                  "attachedObjects": [
-                    {
-                      "id": "${refs.user-lora-training.id}",
-                      "type": "job"
-                    }
-                  ]
-                }
-              },
-              {
                 "ref": "user-lora-training",
                 "kind": "Job",
                 "spec": {
@@ -426,6 +401,31 @@
                   },
                   "buildArguments": {},
                   "runtimeFiles": {}
+                }
+              },
+              {
+                "ref": "lora-adapters",
+                "kind": "Volume",
+                "spec": {
+                  "spec": {
+                    "accessMode": "ReadWriteOnce",
+                    "storageSize": 6144,
+                    "storageClassName": "ssd"
+                  },
+                  "mounts": [
+                    {
+                      "containerMountPath": "/models/adapters",
+                      "volumeMountPath": ""
+                    }
+                  ],
+                  "name": "lora-adapters",
+                  "tags": [],
+                  "attachedObjects": [
+                    {
+                      "id": "${refs.user-lora-training.id}",
+                      "type": "job"
+                    }
+                  ]
                 }
               }
             ]
