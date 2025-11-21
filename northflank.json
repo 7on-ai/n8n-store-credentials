@@ -356,6 +356,43 @@
                 "ref": "n8n-setup-jobrun"
               },
               {
+                "kind": "DeploymentService",
+                "spec": {
+                  "deployment": {
+                    "instances": 1,
+                    "storage": {
+                      "ephemeralStorage": {
+                        "storageSize": 1024
+                      },
+                      "shmSize": 64
+                    },
+                    "docker": {
+                      "configType": "default"
+                    },
+                    "external": {
+                      "credentials": "northflank-ghcr-access",
+                      "imagePath": "ghcr.io/7on-ai/lora-trainer:latest"
+                    }
+                  },
+                  "loadBalancing": {
+                    "mode": "leastConnection"
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-200-8"
+                  },
+                  "runtimeEnvironment": {
+                    "secretGroups": "setup-secrets"
+                  },
+                  "runtimeFiles": {},
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "name": "lora-training",
+                  "ports": []
+                },
+                "ref": "lora-training"
+              },
+              {
                 "ref": "user-lora-training",
                 "kind": "Job",
                 "spec": {
@@ -422,8 +459,8 @@
                   "tags": [],
                   "attachedObjects": [
                     {
-                      "id": "${refs.user-lora-training.id}",
-                      "type": "job"
+                      "id": "${refs.lora-training.id}",
+                      "type": "service"
                     }
                   ]
                 }
@@ -435,6 +472,12 @@
     }
   },
   "arguments": {
+    "name": {
+      "type": "string",
+      "description": "Template name",
+      "required": true,
+      "default": "Sunday"
+    },
     "id": {
       "type": "string",
       "description": "Unique identifier for the project",
