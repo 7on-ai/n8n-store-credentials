@@ -293,7 +293,7 @@
                       "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
                       "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
                       "WORKFLOW_TEMPLATES": "default",
-                      "OUTPUT_PATH": "/workspace/adapters",
+                      "OUTPUT_PATH": "/models/adapters",
                       "PYTHONUNBUFFERED": "1"
                     },
                     "files": {},
@@ -356,19 +356,21 @@
                 "ref": "n8n-setup-jobrun"
               },
               {
+                "ref": "lora-training",
                 "kind": "DeploymentService",
                 "spec": {
                   "deployment": {
-                    "instances": 1,
+                    "instances": 0,
                     "storage": {
                       "ephemeralStorage": {
-                        "storageSize": 1024
+                        "storageSize": 2048
                       },
-                      "shmSize": 64
+                      "shmSize": 128
                     },
                     "docker": {
                       "configType": "default"
                     },
+                    "type": "deployment",
                     "external": {
                       "credentials": "northflank-ghcr-access",
                       "imagePath": "ghcr.io/7on-ai/lora-trainer:latest"
@@ -377,73 +379,99 @@
                   "loadBalancing": {
                     "mode": "leastConnection"
                   },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-200-8"
-                  },
-                  "runtimeEnvironment": {
-                    "secretGroups": "setup-secrets"
-                  },
-                  "runtimeFiles": {},
+                  "name": "lora-training",
                   "infrastructure": {
                     "architecture": "x86"
                   },
-                  "name": "lora-training",
-                  "ports": []
-                },
-                "ref": "lora-training"
+                  "billing": {
+                    "deploymentPlan": "nf-compute-200-8"
+                  },
+                  "ports": [
+                    {
+                      "name": "api",
+                      "internalPort": 8000,
+                      "protocol": "HTTP",
+                      "public": false,
+                      "security": {
+                        "credentials": [],
+                        "policies": [],
+                        "sso": {}
+                      }
+                    }
+                  ],
+                  "healthChecks": [
+                    {
+                      "protocol": "HTTP",
+                      "type": "readinessProbe",
+                      "port": 8000,
+                      "path": "/health",
+                      "initialDelaySeconds": 10,
+                      "periodSeconds": 10,
+                      "timeoutSeconds": 5,
+                      "failureThreshold": 3,
+                      "successThreshold": 1
+                    },
+                    {
+                      "protocol": "HTTP",
+                      "type": "livenessProbe",
+                      "port": 8000,
+                      "path": "/health",
+                      "initialDelaySeconds": 30,
+                      "periodSeconds": 30,
+                      "timeoutSeconds": 5,
+                      "failureThreshold": 3
+                    }
+                  ],
+                  "runtimeEnvironment": {
+                    "secretGroups": "setup-secrets,lora-secrets"
+                  },
+                  "runtimeFiles": {}
+                }
               },
               {
-                "ref": "user-lora-training",
-                "kind": "Job",
+                "ref": "lora-secrets",
+                "kind": "SecretGroup",
                 "spec": {
-                  "settings": {
-                    "backoffLimit": 3,
-                    "activeDeadlineSeconds": 1800,
-                    "runOnSourceChange": "never",
-                    "cron": {
-                      "suspended": false,
-                      "schedule": "11 11 * * 0",
-                      "concurrencyPolicy": "forbid"
+                  "type": "secret",
+                  "secretType": "environment-arguments",
+                  "priority": 10,
+                  "name": "lora-secrets",
+                  "addonDependencies": [
+                    {
+                      "addonId": "${refs.database.id}",
+                      "keys": [
+                        {
+                          "keyName": "EXTERNAL_POSTGRES_URI",
+                          "aliases": [
+                            "POSTGRES_URI"
+                          ]
+                        }
+                      ]
                     }
-                  },
-                  "deployment": {
-                    "storage": {
-                      "ephemeralStorage": {
-                        "storageSize": 1024
-                      },
-                      "shmSize": 64
+                  ],
+                  "secrets": {
+                    "variables": {
+                      "MODEL_NAME": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+                      "OUTPUT_PATH": "/models/adapters",
+                      "VOLUME_MOUNT": "/models/adapters",
+                      "API_PORT": "8000"
                     },
-                    "docker": {
-                      "configType": "default"
-                    },
-                    "external": {
-                      "credentials": "northflank-ghcr-access",
-                      "imagePath": "ghcr.io/7on-ai/lora-trainer:latest"
-                    }
+                    "files": {},
+                    "dockerSecretMounts": {}
                   },
-                  "name": "user-lora-training",
-                  "infrastructure": {
-                    "architecture": "x86"
-                  },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-200-8"
-                  },
-                  "runtimeEnvironment": {
-                    "secretGroups": "setup-secrets"
-                  },
-                  "buildConfiguration": {
-                    "pathIgnoreRules": [],
-                    "isAllowList": false,
-                    "ciIgnoreFlagsEnabled": false
-                  },
-                  "buildArguments": {},
-                  "runtimeFiles": {}
+                  "restrictions": {
+                    "restricted": false,
+                    "nfObjects": [],
+                    "tags": []
+                  }
                 }
               },
               {
                 "ref": "lora-adapters",
                 "kind": "Volume",
                 "spec": {
+                  "name": "lora-adapters",
+                  "tags": [],
                   "spec": {
                     "accessMode": "ReadWriteOnce",
                     "storageSize": 6144,
@@ -455,8 +483,6 @@
                       "volumeMountPath": ""
                     }
                   ],
-                  "name": "lora-adapters",
-                  "tags": [],
                   "attachedObjects": [
                     {
                       "id": "${refs.lora-training.id}",
