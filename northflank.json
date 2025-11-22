@@ -384,14 +384,14 @@
                     "architecture": "x86"
                   },
                   "billing": {
-                    "deploymentPlan": "nf-compute-200-8"
+                    "deploymentPlan": "nf-compute-50"
                   },
                   "ports": [
                     {
                       "name": "api",
                       "internalPort": 8000,
                       "protocol": "HTTP",
-                      "public": false,
+                      "public": true,
                       "security": {
                         "credentials": [],
                         "policies": [],
@@ -452,8 +452,8 @@
                   "secrets": {
                     "variables": {
                       "MODEL_NAME": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-                      "OUTPUT_PATH": "/models/adapters",
-                      "VOLUME_MOUNT": "/models/adapters",
+                      "OUTPUT_PATH": "/workspace/adapters",
+                      "VOLUME_MOUNT": "/workspace/adapters",
                       "API_PORT": "8000"
                     },
                     "files": {},
