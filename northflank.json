@@ -365,7 +365,7 @@
                       "ephemeralStorage": {
                         "storageSize": 2048
                       },
-                      "shmSize": 128
+                      "shmSize": 64
                     },
                     "docker": {
                       "configType": "default"
