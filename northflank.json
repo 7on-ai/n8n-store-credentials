@@ -498,12 +498,6 @@
     }
   },
   "arguments": {
-    "name": {
-      "type": "string",
-      "description": "Template name",
-      "required": true,
-      "default": "Sunday"
-    },
     "id": {
       "type": "string",
       "description": "Unique identifier for the project",
