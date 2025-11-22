@@ -470,8 +470,6 @@
                 "ref": "lora-adapters",
                 "kind": "Volume",
                 "spec": {
-                  "name": "lora-adapters",
-                  "tags": [],
                   "spec": {
                     "accessMode": "ReadWriteOnce",
                     "storageSize": 6144,
@@ -479,10 +477,12 @@
                   },
                   "mounts": [
                     {
-                      "containerMountPath": "/models/adapters",
+                      "containerMountPath": "/workspace/adapters",
                       "volumeMountPath": ""
                     }
                   ],
+                  "name": "lora-adapters",
+                  "tags": [],
                   "attachedObjects": [
                     {
                       "id": "${refs.lora-training.id}",
