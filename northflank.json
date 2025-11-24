@@ -384,7 +384,7 @@
                     "architecture": "x86"
                   },
                   "billing": {
-                    "deploymentPlan": "nf-compute-50"
+                    "deploymentPlan": "nf-compute-200"
                   },
                   "ports": [
                     {
