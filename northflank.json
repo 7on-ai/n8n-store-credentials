@@ -384,7 +384,7 @@
                     "architecture": "x86"
                   },
                   "billing": {
-                    "deploymentPlan": "nf-compute-200"
+                    "deploymentPlan": "nf-compute-200-8"
                   },
                   "ports": [
                     {
@@ -399,29 +399,7 @@
                       }
                     }
                   ],
-                  "healthChecks": [
-                    {
-                      "protocol": "HTTP",
-                      "type": "readinessProbe",
-                      "port": 8000,
-                      "path": "/health",
-                      "initialDelaySeconds": 10,
-                      "periodSeconds": 10,
-                      "timeoutSeconds": 5,
-                      "failureThreshold": 3,
-                      "successThreshold": 1
-                    },
-                    {
-                      "protocol": "HTTP",
-                      "type": "livenessProbe",
-                      "port": 8000,
-                      "path": "/health",
-                      "initialDelaySeconds": 30,
-                      "periodSeconds": 30,
-                      "timeoutSeconds": 5,
-                      "failureThreshold": 3
-                    }
-                  ],
+                  "healthChecks": [],
                   "runtimeEnvironment": {
                     "secretGroups": "setup-secrets,lora-secrets"
                   },
