@@ -40,16 +40,16 @@
                   "type": "postgresql",
                   "version": "16",
                   "billing": {
-                    "deploymentPlan": "nf-compute-20",
+                    "deploymentPlan": "nf-compute-10",
                     "storageClass": "ssd",
-                    "storage": 4096,
+                    "storage": 2048,
                     "replicas": 1
                   },
                   "tlsEnabled": true,
                   "externalAccessEnabled": true,
                   "typeSpecificSettings": {
-                    "postgresqlConnectionPoolerReplicas": 2,
-                    "postgresqlReadConnectionPoolerReplicas": 2
+                    "postgresqlConnectionPoolerReplicas": 1,
+                    "postgresqlReadConnectionPoolerReplicas": 1
                   }
                 }
               },
@@ -138,7 +138,7 @@
                       "N8N_DIAGNOSTICS_ENABLED": "false",
                       "N8N_PERSONALIZATION_ENABLED": "false",
                       "TINI_SUBREAPER": "1",
-                      "N8N_LOG_LEVEL": "info",
+                      "N8N_LOG_LEVEL": "warn",
                       "N8N_LOG_OUTPUT": "console"
                     },
                     "files": {},
@@ -183,20 +183,20 @@
                     "architecture": "x86"
                   },
                   "billing": {
-                    "deploymentPlan": "nf-compute-100-2"
+                    "deploymentPlan": "nf-compute-50-1"
                   },
                   "autoscaling": {
                     "horizontal": {
                       "enabled": true,
                       "minReplicas": 1,
-                      "maxReplicas": 3,
+                      "maxReplicas": 2,
                       "cpu": {
                         "enabled": true,
-                        "thresholdPercentage": 80
+                        "thresholdPercentage": 75
                       },
                       "memory": {
                         "enabled": true,
-                        "thresholdPercentage": 80
+                        "thresholdPercentage": 75
                       }
                     }
                   },
@@ -219,19 +219,19 @@
                       "type": "startupProbe",
                       "port": 5678,
                       "path": "/healthz",
-                      "initialDelaySeconds": 45,
-                      "periodSeconds": 15,
-                      "timeoutSeconds": 10,
-                      "failureThreshold": 15
+                      "initialDelaySeconds": 30,
+                      "periodSeconds": 10,
+                      "timeoutSeconds": 5,
+                      "failureThreshold": 12
                     },
                     {
                       "protocol": "HTTP",
                       "type": "livenessProbe",
                       "port": 5678,
                       "path": "/healthz",
-                      "initialDelaySeconds": 60,
-                      "periodSeconds": 60,
-                      "timeoutSeconds": 10,
+                      "initialDelaySeconds": 45,
+                      "periodSeconds": 45,
+                      "timeoutSeconds": 5,
                       "failureThreshold": 3
                     },
                     {
@@ -239,9 +239,9 @@
                       "type": "readinessProbe",
                       "port": 5678,
                       "path": "/healthz/readiness",
-                      "initialDelaySeconds": 45,
-                      "periodSeconds": 30,
-                      "timeoutSeconds": 10,
+                      "initialDelaySeconds": 30,
+                      "periodSeconds": 20,
+                      "timeoutSeconds": 5,
                       "failureThreshold": 3,
                       "successThreshold": 1
                     }
@@ -315,7 +315,7 @@
                     "architecture": "x86"
                   },
                   "billing": {
-                    "deploymentPlan": "nf-compute-20"
+                    "deploymentPlan": "nf-compute-10"
                   },
                   "deployment": {
                     "storage": {
@@ -336,7 +336,7 @@
                   },
                   "settings": {
                     "backoffLimit": 3,
-                    "activeDeadlineSeconds": 600,
+                    "activeDeadlineSeconds": 300,
                     "runOnSourceChange": "never"
                   },
                   "buildConfiguration": {
@@ -363,7 +363,7 @@
                     "instances": 0,
                     "storage": {
                       "ephemeralStorage": {
-                        "storageSize": 2048
+                        "storageSize": 1024
                       },
                       "shmSize": 64
                     },
@@ -472,7 +472,7 @@
                 "spec": {
                   "spec": {
                     "accessMode": "ReadWriteOnce",
-                    "storageSize": 6144,
+                    "storageSize": 4096,
                     "storageClassName": "ssd"
                   },
                   "mounts": [
