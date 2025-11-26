@@ -294,7 +294,8 @@
                       "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
                       "WORKFLOW_TEMPLATES": "default",
                       "OUTPUT_PATH": "/models/adapters",
-                      "PYTHONUNBUFFERED": "1"
+                      "PYTHONUNBUFFERED": "1",
+                      "NORTHFLANK_API_TOKEN": "nf-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiOWU4MWY1ZGMtNjE2Ni00N2RlLTk4OTctMzNjMjk2N2EzM2RkIiwiaWF0IjoxNzUzMzY4Mjg4fQ.jjFma5kEP3AwTknY2ML_OXzrCCMlCv82Dk6j9IWWFiQ"
                     },
                     "files": {},
                     "dockerSecretMounts": {}
@@ -303,7 +304,8 @@
                     "restricted": false,
                     "nfObjects": [],
                     "tags": []
-                  }
+                  },
+                  "addonDependencies": []
                 }
               },
               {
