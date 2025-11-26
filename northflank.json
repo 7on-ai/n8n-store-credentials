@@ -403,7 +403,12 @@
                   ],
                   "healthChecks": [],
                   "runtimeEnvironment": {
-                    "secretGroups": "setup-secrets,lora-secrets"
+                    "secretGroups": "setup-secrets,lora-secrets",
+                    "OUTPUT_PATH": "/workspace/adapters",
+                    "MODEL_NAME": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+                    "POSTGRES_URI": "${lora-secrets.POSTGRES_URI}",
+                    "NORTHFLANK_API_TOKEN": "${lora-secrets.NORTHFLANK_API_TOKEN}",
+                    "NORTHFLANK_PROJECT_ID": "${lora-secrets.NORTHFLANK_PROJECT_ID}"
                   },
                   "runtimeFiles": {}
                 }
