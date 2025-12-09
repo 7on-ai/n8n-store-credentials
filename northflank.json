@@ -120,7 +120,7 @@
                       "configType": "default"
                     },
                     "external": {
-                      "imagePath": "postgres:16-alpine"
+                      "imagePath": "alpine:3.19"
                     }
                   },
                   "runtimeEnvironment": {
