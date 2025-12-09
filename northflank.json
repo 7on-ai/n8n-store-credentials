@@ -10,7 +10,7 @@
           "kind": "Project",
           "spec": {
             "name": "Sunday-${args.id}",
-            "description": "N8N SaaS Instance with Auto DB Setup",
+            "description": "N8N SaaS Instance with Neon Database and LoRA Training",
             "color": "#ea4b70",
             "networking": {
               "allowedIngressProjects": [],
@@ -64,94 +64,6 @@
                     "type": "running"
                   }
                 }
-              },
-              {
-                "ref": "db-init-secrets",
-                "kind": "SecretGroup",
-                "spec": {
-                  "type": "secret",
-                  "secretType": "environment-arguments",
-                  "priority": 10,
-                  "name": "db-init-secrets",
-                  "addonDependencies": [
-                    {
-                      "addonId": "${refs.database.id}",
-                      "keys": [
-                        {
-                          "keyName": "EXTERNAL_POSTGRES_URI_ADMIN",
-                          "aliases": [
-                            "POSTGRES_URI_ADMIN"
-                          ]
-                        },
-                        {
-                          "keyName": "EXTERNAL_POSTGRES_URI",
-                          "aliases": [
-                            "POSTGRES_URI"
-                          ]
-                        }
-                      ]
-                    }
-                  ],
-                  "secrets": {
-                    "variables": {},
-                    "files": {},
-                    "dockerSecretMounts": {}
-                  },
-                  "restrictions": {
-                    "restricted": false,
-                    "nfObjects": [],
-                    "tags": []
-                  }
-                }
-              },
-              {
-                "ref": "db-init-job",
-                "kind": "Job",
-                "spec": {
-                  "name": "db-schema-init",
-                  "infrastructure": {
-                    "architecture": "x86"
-                  },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-20"
-                  },
-                  "deployment": {
-                    "storage": {
-                      "ephemeralStorage": {
-                        "storageSize": 1024
-                      },
-                      "shmSize": 64
-                    },
-                    "docker": {
-                      "configType": "default"
-                    },
-                    "external": {
-                      "imagePath": "postgres:16-alpine"
-                    }
-                  },
-                  "runtimeEnvironment": {
-                    "secretGroups": "db-init-secrets"
-                  },
-                  "settings": {
-                    "backoffLimit": 3,
-                    "activeDeadlineSeconds": 300,
-                    "runOnSourceChange": "never"
-                  },
-                  "buildConfiguration": {
-                    "pathIgnoreRules": [],
-                    "isAllowList": false,
-                    "ciIgnoreFlagsEnabled": false
-                  },
-                  "buildArguments": {}
-                }
-              },
-              {
-                "kind": "JobRun",
-                "spec": {
-                  "jobId": "${refs.db-init-job.id}"
-                },
-                "condition": "success",
-                "ref": "db-init-jobrun"
               },
               {
                 "ref": "n8n-secrets-base",
