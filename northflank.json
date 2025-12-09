@@ -78,12 +78,6 @@
                       "addonId": "${refs.database.id}",
                       "keys": [
                         {
-                          "keyName": "EXTERNAL_POSTGRES_URI_ADMIN",
-                          "aliases": [
-                            "POSTGRES_URI_ADMIN"
-                          ]
-                        },
-                        {
                           "keyName": "EXTERNAL_POSTGRES_URI",
                           "aliases": [
                             "POSTGRES_URI"
