@@ -324,12 +324,10 @@
                 "ref": "n8n-setup-job",
                 "kind": "Job",
                 "spec": {
-                  "name": "n8n-setup-complete",
-                  "infrastructure": {
-                    "architecture": "x86"
-                  },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-20"
+                  "settings": {
+                    "backoffLimit": 3,
+                    "activeDeadlineSeconds": 600,
+                    "runOnSourceChange": "never"
                   },
                   "deployment": {
                     "storage": {
@@ -345,20 +343,23 @@
                       "imagePath": "ghcr.io/7on-ai/7on-n8n:latest"
                     }
                   },
+                  "name": "n8n-setup-complete",
+                  "infrastructure": {
+                    "architecture": "x86"
+                  },
+                  "billing": {
+                    "deploymentPlan": "nf-compute-20"
+                  },
                   "runtimeEnvironment": {
                     "secretGroups": "setup-secrets"
-                  },
-                  "settings": {
-                    "backoffLimit": 3,
-                    "activeDeadlineSeconds": 600,
-                    "runOnSourceChange": "never"
                   },
                   "buildConfiguration": {
                     "pathIgnoreRules": [],
                     "isAllowList": false,
                     "ciIgnoreFlagsEnabled": false
                   },
-                  "buildArguments": {}
+                  "buildArguments": {},
+                  "runtimeFiles": {}
                 }
               },
               {
