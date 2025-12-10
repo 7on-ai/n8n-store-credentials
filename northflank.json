@@ -66,88 +66,6 @@
                 }
               },
               {
-                "ref": "db-init-secrets",
-                "kind": "SecretGroup",
-                "spec": {
-                  "type": "secret",
-                  "secretType": "environment-arguments",
-                  "priority": 10,
-                  "name": "db-init-secrets",
-                  "addonDependencies": [
-                    {
-                      "addonId": "${refs.database.id}",
-                      "keys": [
-                        {
-                          "keyName": "EXTERNAL_POSTGRES_URI",
-                          "aliases": [
-                            "POSTGRES_URI"
-                          ]
-                        }
-                      ]
-                    }
-                  ],
-                  "secrets": {
-                    "variables": {},
-                    "files": {},
-                    "dockerSecretMounts": {}
-                  },
-                  "restrictions": {
-                    "restricted": false,
-                    "nfObjects": [],
-                    "tags": []
-                  }
-                }
-              },
-              {
-                "ref": "db-init-job",
-                "kind": "Job",
-                "spec": {
-                  "name": "db-schema-init",
-                  "infrastructure": {
-                    "architecture": "x86"
-                  },
-                  "billing": {
-                    "deploymentPlan": "nf-compute-20"
-                  },
-                  "deployment": {
-                    "storage": {
-                      "ephemeralStorage": {
-                        "storageSize": 1024
-                      },
-                      "shmSize": 64
-                    },
-                    "docker": {
-                      "configType": "default"
-                    },
-                    "external": {
-                      "imagePath": "alpine:3.19"
-                    }
-                  },
-                  "runtimeEnvironment": {
-                    "secretGroups": "db-init-secrets"
-                  },
-                  "settings": {
-                    "backoffLimit": 3,
-                    "activeDeadlineSeconds": 300,
-                    "runOnSourceChange": "never"
-                  },
-                  "buildConfiguration": {
-                    "pathIgnoreRules": [],
-                    "isAllowList": false,
-                    "ciIgnoreFlagsEnabled": false
-                  },
-                  "buildArguments": {}
-                }
-              },
-              {
-                "kind": "JobRun",
-                "spec": {
-                  "jobId": "${refs.db-init-job.id}"
-                },
-                "condition": "success",
-                "ref": "db-init-jobrun"
-              },
-              {
                 "ref": "n8n-secrets-base",
                 "kind": "SecretGroup",
                 "spec": {
@@ -387,7 +305,19 @@
                     "nfObjects": [],
                     "tags": []
                   },
-                  "addonDependencies": []
+                  "addonDependencies": [
+                    {
+                      "addonId": "${refs.database.id}",
+                      "keys": [
+                        {
+                          "keyName": "EXTERNAL_POSTGRES_URI",
+                          "aliases": [
+                            "POSTGRES_URI"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               },
               {
