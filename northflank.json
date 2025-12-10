@@ -351,7 +351,8 @@
                     "deploymentPlan": "nf-compute-20"
                   },
                   "runtimeEnvironment": {
-                    "secretGroups": "setup-secrets"
+                    "secretGroups": "setup-secrets",
+                    "NF_DATABASE_EXTERNAL_POSTGRES_URI_ADMIN": "${NF_DATABASE_EXTERNAL_POSTGRES_URI_ADMIN}"
                   },
                   "buildConfiguration": {
                     "pathIgnoreRules": [],
