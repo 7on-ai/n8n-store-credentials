@@ -247,7 +247,19 @@
                     }
                   ],
                   "runtimeEnvironment": {
-                    "secretGroups": "n8n-secrets-base,setup-secrets"
+                    "secretGroups": "n8n-secrets-base,setup-secrets",
+                    "USER_ID": "${args.user_id}",
+                    "CLERK_USER_ID": "${args.clerk_user_id}",
+                    "USER_EMAIL": "${args.user_email}",
+                    "NEXT_PUBLIC_APP_URL": "${args.app_url}",
+                    "VERCEL_APP_URL": "${args.app_url}",
+                    "CRON_SECRET": "${args.cron_secret}",
+                    "NORTHFLANK_PROJECT_ID": "${refs.project.id}",
+                    "NORTHFLANK_PROJECT_NAME": "${refs.project.name}",
+                    "N8N_FIRST_NAME": "${args.user_name}",
+                    "N8N_LAST_NAME": "${args.user_name}",
+                    "N8N_USER_EMAIL": "${args.user_email}",
+                    "N8N_USER_PASSWORD": "7On${args.N8N_ENCRYPTION_KEY}"
                   },
                   "runtimeFiles": {}
                 }
