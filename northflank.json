@@ -476,12 +476,17 @@
                 "kind": "Volume",
                 "spec": {
                   "spec": {
-                    "accessMode": "ReadWriteOnce",
-                    "storageSize": 6144
+                    "accessMode": "ReadWriteMany",
+                    "storageSize": 6144,
+                    "storageClassName": "nf-multi-rw"
                   },
                   "mounts": [
                     {
                       "containerMountPath": "/workspace/adapters",
+                      "volumeMountPath": ""
+                    },
+                    {
+                      "containerMountPath": "/data",
                       "volumeMountPath": ""
                     }
                   ],
