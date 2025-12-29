@@ -476,9 +476,9 @@
                 "kind": "Volume",
                 "spec": {
                   "spec": {
-                    "accessMode": "ReadWriteMany",
+                    "accessMode": "ReadWriteOnce",
                     "storageSize": 6144,
-                    "storageClassName": "nf-multi-rw"
+                    "storageClassName": "nvme"
                   },
                   "mounts": [
                     {
