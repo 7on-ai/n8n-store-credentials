@@ -459,7 +459,10 @@
                       "MODEL_NAME": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
                       "OUTPUT_PATH": "/workspace/adapters",
                       "VOLUME_MOUNT": "/workspace/adapters",
-                      "API_PORT": "8000"
+                      "API_PORT": "8000",
+                      "OLLAMA_URL": "http://ollama:11434",
+                      "OLLAMA_EXTERNAL_URL": "https://${refs.ollama.ports.0.dns}",
+                      "OLLAMA_ENABLED": "true"
                     },
                     "files": {},
                     "dockerSecretMounts": {}
