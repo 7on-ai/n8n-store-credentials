@@ -466,8 +466,8 @@
                       "OUTPUT_PATH": "/workspace/adapters",
                       "VOLUME_MOUNT": "/workspace/adapters",
                       "API_PORT": "8000",
-                      "OLLAMA_URL": "http://ollama:11434",
-                      "OLLAMA_EXTERNAL_URL": "https://${refs.ollama.ports.0.dns}",
+                      "OLLAMA_URL": "http://ollama-official.ns-lcxm6b4kxkbw:11434",
+                      "OLLAMA_EXTERNAL_URL": "https://sun--ollama-official--lcxm6b4kxkbw.code.run",
                       "OLLAMA_ENABLED": "true"
                     },
                     "files": {},
