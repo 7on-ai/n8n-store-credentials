@@ -208,7 +208,10 @@
                       "security": {
                         "credentials": [],
                         "policies": [],
-                        "sso": {}
+                        "sso": {},
+                        "securePathConfiguration": {
+                          "rules": []
+                        }
                       }
                     }
                   ],
